@@ -1,6 +1,7 @@
 [![npm](https://img.shields.io/npm/v/nativescript-couchbase-plugin.svg)](https://www.npmjs.com/package/nativescript-couchbase-plugin)
 [![npm](https://img.shields.io/npm/dt/nativescript-couchbase-plugin.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript-couchbase-plugin)
 [![Build Status](https://travis-ci.org/triniwiz/nativescript-couchbase-plugin.svg?branch=master)](https://travis-ci.org/triniwiz/nativescript-couchbase-plugin)
+
 # nativeScript-couchbase
 
 ## Installation
@@ -10,6 +11,8 @@ tns plugin add nativescript-couchbase-plugin
 ```
 
 ## Usage
+**Note Android min-sdk is 19**
+
 
 ```ts
 import { Couchbase } from 'nativescript-couchbase-plugin';
@@ -62,6 +65,18 @@ database.addDatabaseChangeListener(function(changes) {
     const documentId = changes[i];
     console.log(documentId);
   }
+});
+```
+
+### Query
+
+```ts
+const results = database.query({
+  select: [], // Leave empty to query for all
+  from: 'otherDatabaseName', // Omit or set null to use current db
+  where: [{ property: 'firstName', comparison: 'equalTo', value: 'Osei' }],
+  order: [{ property: 'firstName', direction: 'desc' }],
+  limit: 2
 });
 ```
 

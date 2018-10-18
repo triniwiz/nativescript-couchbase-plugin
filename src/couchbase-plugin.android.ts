@@ -1,16 +1,14 @@
 import {
   Common,
-  QueryBase,
+  QueryWhereItem,
   QueryMeta,
-  QueryExpressionBase,
-  QueryFromBase,
-  QueryWhereBase,
-  QueryOrderByBase,
-  QueryLimitBase,
-  QueryExpressionItem,
-  ReplicatorBase
+  ReplicatorBase,
+  Query,
+  QueryLogicalOperator,
+  QueryComparisonOperator
 } from './couchbase-plugin.common';
 import * as utils from 'tns-core-modules/utils/utils';
+declare var com;
 export class Couchbase extends Common {
   config: any;
   android: any;
@@ -22,7 +20,7 @@ export class Couchbase extends Common {
     this.android = new com.couchbase.lite.Database(name, this.config);
   }
   createDocument(data: Object, documentId?: string) {
-    let doc: com.couchbase.lite.MutableDocument;
+    let doc;
     if (documentId) {
       doc = new com.couchbase.lite.MutableDocument(documentId);
     } else {
@@ -42,7 +40,7 @@ export class Couchbase extends Common {
     const size = keys.size();
     let object = {};
     for (let i = 0; i < size; i++) {
-      const key = keys[i];
+      const key = keys.get(i);
       const item = doc.getValue(key);
       const newItem = {};
       newItem[key] = item;
@@ -72,10 +70,210 @@ export class Couchbase extends Common {
     this.android.delete();
   }
 
-  query(select?: any[]) {
-    // return new Query(this, select);
-    return null;
+  query(query: Query = { select: [] }) {
+    const items = [];
+    let select = [];
+    if (!query.select || query.select.length === 0) {
+      select.push(com.couchbase.lite.SelectResult.all());
+    } else {
+      query.select.forEach(item => {
+        if (item === QueryMeta.ID) {
+          select.push(com.couchbase.lite.Meta.id);
+        } else {
+          select.push(com.couchbase.lite.Expression.property(item));
+        }
+      });
+    }
+    let queryBuilder: any = com.couchbase.lite.QueryBuilder.select(select);
+    if (query.from) {
+      const db = new Couchbase(query.from);
+      queryBuilder = queryBuilder.from(
+        com.couchbase.lite.DataSource.database(db.android)
+      );
+    } else {
+      queryBuilder = queryBuilder.from(
+        com.couchbase.lite.DataSource.database(this.android)
+      );
+    }
+
+    let nativeQuery;
+    if (query.where) {
+      for (let item of query.where) {
+        if (item === QueryLogicalOperator.AND) {
+          if (!nativeQuery) break;
+        } else if (item === QueryLogicalOperator.OR) {
+          if (!nativeQuery) break;
+        } else {
+          if (item) {
+            switch (item.comparison as QueryComparisonOperator) {
+              case 'equalTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).equalTo(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'add':
+                break;
+              case 'between':
+                break;
+              case 'collate':
+                break;
+              case 'divide':
+                break;
+              case 'greaterThan':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).greaterThan(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'greaterThanOrEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).greaterThanOrEqualTo(
+                  com.couchbase.lite.Expression.value(item.value)
+                );
+                break;
+              case 'in':
+                const inArray = [];
+                if (Array.isArray(item.value)) {
+                  for (let exp of item.value) {
+                    inArray.push(com.couchbase.lite.Expression.value(exp));
+                  }
+                } else {
+                  inArray.push(com.couchbase.lite.Expression.value(item.value));
+                }
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).in(inArray);
+                break;
+              case 'is':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).is(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'isNot':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).isNot(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'isNullOrMissing':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).isNullOrMissing();
+                break;
+              case 'lessThan':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).lessThan(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'lessThanOrEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).lessThanOrEqualTo(
+                  com.couchbase.lite.Expression.value(item.value)
+                );
+                break;
+              case 'like':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).like(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'modulo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).modulo(com.couchbase.lite.Expression.value(item.value));
+                break;
+              case 'multiply':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).multiply(com.couchbase.lite.Expression.value(item.value));
+                break;
+
+              case 'notEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).notEqualTo(com.couchbase.lite.Expression.value(item.value));
+                break;
+
+              case 'notNullOrMissing':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).notNullOrMissing();
+                break;
+              case 'regex':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                  item.property
+                ).regex(com.couchbase.lite.Expression.value(item.value));
+                break;
+            }
+          }
+        }
+      }
+      if (nativeQuery) {
+        queryBuilder = queryBuilder.where(nativeQuery);
+      }
+    }
+    if (query.groupBy) {
+      const groupBy = [];
+      for (let prop of query.groupBy) {
+        groupBy.push(com.couchbase.lite.Expression.property(prop));
+      }
+      if (groupBy.length > 0) {
+        queryBuilder = queryBuilder.groupBy(groupBy);
+      }
+    }
+    if (query.order) {
+      const orderBy = [];
+      for (let item of query.order) {
+        switch (item.direction) {
+          case 'desc':
+            orderBy.push(
+              com.couchbase.lite.Ordering.property(item.property).descending()
+            );
+            break;
+          default:
+            orderBy.push(
+              com.couchbase.lite.Ordering.property(item.property).ascending()
+            );
+            break;
+        }
+      }
+      if (orderBy.length > 0) {
+        queryBuilder = queryBuilder.orderBy(orderBy);
+      }
+    }
+
+    if (query.limit && typeof query.limit === 'number') {
+      queryBuilder = queryBuilder.limit(
+        com.couchbase.lite.Expression.value(query.limit)
+      );
+    }
+
+    const result = queryBuilder.execute().allResults();
+    const size = result.size();
+    for (let i = 0; i < size; i++) {
+      const item = result.get(i);
+      const keys = item.getKeys();
+      const keysSize = keys.size();
+      const obj = {};
+      for (let keyId = 0; keyId < keysSize; keyId++) {
+        const key = keys.get(keyId);
+        const nativeItem = item.getValue(key);
+        if (
+          nativeItem.getClass().getName() === 'com.couchbase.lite.Dictionary'
+        ) {
+          const cblKeys = nativeItem.getKeys();
+          const cblKeysSize = cblKeys.size();
+          for (let cblKeysId = 0; cblKeysId < cblKeysSize; cblKeysId++) {
+            const cblKey = cblKeys.get(cblKeysId);
+            obj[cblKey] = nativeItem.getValue(cblKey);
+          }
+        }
+      }
+      items.push(obj);
+    }
+
+    return items;
   }
+
   createPullReplication(
     remoteUrl: string,
     username?: string,
@@ -129,15 +327,15 @@ export class Couchbase extends Common {
     return new Replicator(replicator);
   }
   addDatabaseChangeListener(callback: any) {
-    (this.android as com.couchbase.lite.Database).addChangeListener(
+    this.android.addChangeListener(
       new com.couchbase.lite.DatabaseChangeListener({
-        changed(changes: com.couchbase.lite.DatabaseChange): void {
+        changed(changes: any): void {
           if (callback && typeof callback === 'function') {
             const ids = [];
             const documentIds = changes.getDocumentIDs();
             const size = documentIds.size();
             for (let i = 0; i < size; i++) {
-              const item = documentIds[i];
+              const item = documentIds.get(i);
               ids.push(item);
             }
             callback(ids);
@@ -168,370 +366,3 @@ export class Replicator extends ReplicatorBase {
     this.replicator.getConfig().setContinuous(isContinuous);
   }
 }
-
-/*
-export class QueryExpression implements QueryExpressionBase {
-  expression: QueryExpressionItem[];
-  private constructor() {
-    this.expression = [];
-  }
-
-  modulo(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'modulo'
-    });
-    return this;
-  }
-
-  is(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'is'
-    });
-    return this;
-  }
-  between(
-    propertyA: string,
-    valueA: any,
-    propertyB: string,
-    valueB: any
-  ): this {
-    this.expression.push({
-      property: [propertyA, propertyB],
-      value: [valueA, valueB],
-      type: 'between'
-    });
-    return this;
-  }
-  isNot(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'isNot'
-    });
-    return this;
-  }
-  */
-/* TODO
-  collate(param0: com.couchbase.lite.Collation): this {
-    param0.
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'modulo'
-    });
-    return this;
-  }
-  */
-/*
-  in(value: any[]): this {
-    this.expression.push({
-      property: null,
-      value: value,
-      type: 'in'
-    });
-    return this;
-  }
-  add(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'add'
-    });
-    return this;
-  }
-  isNullOrMissing(): this {
-    this.expression.push({
-      property: null,
-      value: null,
-      type: 'isNullOrMissing'
-    });
-    return this;
-  }
-  greaterThan(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'greaterThan'
-    });
-    return this;
-  }
-  divide(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'divide'
-    });
-    return this;
-  }
-  notEqualTo(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'notEqualTo'
-    });
-    com.couchbase.lite.Expression.property("").and(com.couchbase.lite.Expression.property("").add(""))
-    return this;
-  }
-  greaterThanOrEqualTo(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'greaterThanOrEqualTo'
-    });
-    return this;
-  }
-  like(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'like'
-    });
-    return this;
-  }
-  subtract(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'subtract'
-    });
-    return this;
-  }
-  and(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'and'
-    });
-    return this;
-  }
-  or(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'or'
-    });
-    return this;
-  }
-  lessThanOrEqualTo(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'lessThanOrEqualTo'
-    });
-    return this;
-  }
-  lessThan(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'lessThan'
-    });
-    return this;
-  }
-  notNullOrMissing(): this {
-    this.expression.push({
-      property: null,
-      value: null,
-      type: 'notNullOrMissing'
-    });
-    return this;
-  }
-  regex(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'regex'
-    });
-    return this;
-  }
-  equalTo(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'equalTo'
-    });
-    return this;
-  }
-  multiply(property: string, value: any): this {
-    this.expression.push({
-      property: property,
-      value: value,
-      type: 'multiply'
-    });
-    return this;
-  }
-}
-
-
-export class Query implements QueryBase {
-  query: any;
-  constructor(database: Couchbase, select: any[]) {
-    const selectArray = [];
-    if (select.indexOf(QueryMeta.ID) === -1) {
-      selectArray.push(com.couchbase.lite.SelectResult.all);
-    }
-    select.forEach(item => {
-      if (typeof item === 'string' && item === QueryMeta.ID) {
-        selectArray.push(
-          com.couchbase.lite.SelectResult.expression(com.couchbase.lite.Meta.id)
-        );
-      } else if (item instanceof RegExp) {
-      } else {
-        selectArray.push(com.couchbase.lite.SelectResult.property(item));
-      }
-    });
-    this.query = com.couchbase.lite.QueryBuilder.select([selectArray]);
-  }
-
-  from(databaseName: string = null): QueryFrom {
-    return QueryFrom.fromQuery(databaseName, this);
-  }
-  execute(): any[] {
-    const items = [];
-    const result = this.select.execute().allResults();
-    const size = result.size();
-    for (let i = 0; i < size; i++) {
-      const item = result.get(i);
-      items.push(item);
-    }
-    return items;
-  }
-}
-
-export class QueryWhere implements QueryWhereBase {
-  query: any;
-  expression: QueryExpression;
-  private constructor(query: any, expression: QueryExpression) {
-    // (query as com.couchbase.lite.From).where().
-    this.query = query;
-    this.expression = expression;
-  }
-  public static fromQuery(query: any, expression: QueryExpression) {
-    let nativeExpression: com.couchbase.lite.Expression;
-    expression.expression.forEach(item => {
-      switch (item.type) {
-        case 'add':
-          if (!nativeExpression) {
-            nativeExpression = com.couchbase.lite.Expression.property(
-              item.property
-            ).add(com.couchbase.lite.Expression.value(item.value));
-          }else {
-           // nativeExpression.add()
-          }
-          break;
-          case 'and':
-          if (!nativeExpression) {
-            nativeExpression.and()
-            nativeExpression = com.couchbase.lite.Expression.property(
-              item.property
-            ).add(com.couchbase.lite.Expression.value(item.value));
-          }else {
-           nativeExpression.and()
-          }
-          break;
-      }
-    });
-    const where = new QueryWhere(query, expression);
-    where.query = nativeExpression
-    return where;
-  }
-
-  orderBy(): QueryOrderBy {
-    return QueryOrderBy.fromQuery(this.where);
-  }
-  groupBy(): QueryBase {
-    throw new Error('Method not implemented.');
-  }
-  limit(): QueryBase {
-    throw new Error('Method not implemented.');
-  }
-  execute(): any[] {
-    throw new Error('Method not implemented.');
-  }
-}
-
-export class QueryFrom implements QueryFromBase {
-  query: any;
-  from: any;
-  private constructor(database: Couchbase, query: Query) {
-    this.query = query;
-  }
-  public static fromQuery(databaseName: string, query: Query) {
-    const database = new Couchbase(databaseName);
-    const from = new QueryFrom(database, query);
-    from.from = (query.query as com.couchbase.lite.Select).from(
-      com.couchbase.lite.DataSource.database(database.android)
-    );
-    return from;
-  }
-  where(expression: QueryExpression): QueryWhere {
-    return QueryWhere.fromQuery(this.query, expression);
-  }
-  orderBy(): QueryOrderBy {}
-  groupBy(): QueryGroupBy {
-    throw new Error('Method not implemented.');
-  }
-  join(): QueryJoin {
-    throw new Error('Method not implemented.');
-  }
-  execute(): any[] {
-    const items = [];
-    const result = this.from.execute().allResults();
-    const size = result.size();
-    for (let i = 0; i < size; i++) {
-      const item = result.get(i);
-      items.push(item);
-    }
-    return items;
-  }
-}
-
-export class QueryLimit extends QueryLimitBase {
-  constructor(limit: number) {
-    super(limit);
-  }
-  public static fromQuery(query: any, limit: number) {
-    const qLimit = new QueryLimit(limit);
-    qLimit.limit = query.limit(limit);
-    return qLimit;
-  }
-
-  execute(): any[] {
-    const items = [];
-    const result = this.query.execute().allResults();
-    const size = result.size();
-    for (let i = 0; i < size; i++) {
-      const item = result.get(i);
-      items.push(item);
-    }
-    return items;
-  }
-}
-
-export class QueryOrderBy extends QueryOrderByBase {
-  limit(limit: number): QueryLimit {
-    return QueryLimit.fromQuery(this.query, limit);
-  }
-  execute(): any[] {
-    const items = [];
-    const result = this.query.execute().allResults();
-    const size = result.size();
-    for (let i = 0; i < size; i++) {
-      const item = result.get(i);
-      items.push(item);
-    }
-    return items;
-  }
-  private constructor() {
-    super();
-  }
-  public static fromQuery(query: any): QueryOrderBy {
-    return null;
-  }
-}
-
-*/

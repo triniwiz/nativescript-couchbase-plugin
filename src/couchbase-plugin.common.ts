@@ -1,5 +1,3 @@
-import { Couchbase } from './couchbase-plugin.ios';
-
 export abstract class Common {
   ios: any;
   android: any;
@@ -10,7 +8,7 @@ export abstract class Common {
   abstract updateDocument(documentId: string, data: any);
   abstract deleteDocument(documentId: string);
   abstract destroyDatabase();
-  abstract query(select?: any[]): QueryBase;
+  abstract query(query: Query): any[];
   abstract createPullReplication(remoteUrl: string);
   abstract createPushReplication(remoteUrl: string);
   abstract addDatabaseChangeListener(callback: any);
@@ -36,54 +34,7 @@ export enum QueryMeta {
   ID = 'COUCHBASE_ID'
 }
 
-export interface CBQuery {
-  query: any;
-  execute(): any[];
-}
-
-export interface QueryBase extends CBQuery {
-  query: any;
-  database: Common;
-  from(databaseName?: string): QueryFromBase;
-}
-
-export interface QueryFromBase {
-  constructor(databaseName: string, query: QueryBase);
-  where(): QueryWhereBase;
-  orderBy(): QueryOrderByBase;
-  groupBy(): QueryGroupByBase;
-  join(): QueryJoinBase;
-}
-
-export interface QueryWhereBase {
-  constructor(query: any);
-  orderBy(): QueryOrderByBase;
-  groupBy(): QueryGroupByBase;
-  limit(): QueryLimitBase;
-}
-
-export interface QueryOrderByBase {
-  limit(): QueryLimitBase;
-  execute(): any[];
-}
-
-export interface QueryGroupByBase {
-  limit(): QueryLimitBase;
-  execute(): any[];
-}
-
-export interface QueryLimitBase {
-  constructor(limit: number);
-  limit: number;
-}
-
-export interface QueryJoinBase {
-  constructor(query: any);
-  where(): QueryWhereBase;
-  orderBy(): QueryOrderByBase;
-  limit(): QueryLimitBase;
-}
-export type QueryExpressionType =
+export type QueryComparisonOperator =
   | 'modulo'
   | 'is'
   | 'between'
@@ -98,8 +49,6 @@ export type QueryExpressionType =
   | 'greaterThanOrEqualTo'
   | 'like'
   | 'subtract'
-  | 'and'
-  | 'or'
   | 'lessThanOrEqualTo'
   | 'lessThan'
   | 'notNullOrMissing'
@@ -107,34 +56,33 @@ export type QueryExpressionType =
   | 'equalTo'
   | 'multiply';
 
-export interface QueryExpressionItem {
-  property: any;
-  value: any | any[];
-  type: QueryExpressionType;
+export enum QueryLogicalOperator {
+  AND = 'and',
+  OR = 'or'
 }
 
-export interface QueryExpressionBase {
-  expression: QueryExpressionItem[];
-  modulo(property: string, value: any): this;
-  is(property: string, value: any): this;
-  between(propertyA: string, valueA: any, propertyB: string, valueB: any): this;
-  isNot(property: string, value: any): this;
-  // collate(param0: com.couchbase.lite.Collation): this;
-  in(param0: any[]): this;
-  add(property: string, value: any): this;
-  isNullOrMissing(): this;
-  greaterThan(property: string, value: any): this;
-  divide(property: string, value: any): this;
-  notEqualTo(property: string, value: any): this;
-  greaterThanOrEqualTo(property: string, value: any): this;
-  like(property: string, value: any): this;
-  subtract(property: string, value: any): this;
-  and(property: string, value: any): this;
-  or(property: string, value: any): this;
-  lessThanOrEqualTo(property: string, value: any): this;
-  lessThan(property: string, value: any): this;
-  notNullOrMissing(): this;
-  regex(property: string, value: any): this;
-  equalTo(property: string, value: any): this;
-  multiply(property: string, value: any): this;
+export enum QueryArrayOperator {
+  CONTAINS = 'contains'
+}
+
+export interface Query {
+  select: any[];
+  // join?: any[];
+  where?: any[];
+  groupBy?: any;
+  // having?: any;
+  order?: QueryOrderItem[];
+  limit?: any;
+  from?: string;
+}
+
+export interface QueryWhereItem {
+  property: string;
+  comparison: QueryComparisonOperator;
+  value: any;
+}
+
+export interface QueryOrderItem {
+  property: string;
+  direction: 'asc' | 'desc';
 }

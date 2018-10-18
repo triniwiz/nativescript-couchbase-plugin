@@ -1,3 +1,9 @@
+  android {
+    defaultConfig {
+        minSdkVersion 19
+    }
+  }
+
   repositories {
         google()
         jcenter()
