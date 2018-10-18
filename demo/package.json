@@ -3,13 +3,16 @@
     "id": "org.nativescript.demo",
     "tns-ios": {
       "version": "5.0.0-rc-2018-10-12-131715-01"
+    },
+    "tns-android": {
+      "version": "5.0.0-rc-2018-10-15-143937-09"
     }
   },
   "dependencies": {
+    "nativescript-couchbase-plugin": "file:../src",
     "nativescript-theme-core": "^1.0.4",
     "nativescript-unit-test-runner": "^0.3.4",
-    "nativescript-couchbase-plugin": "file:../src",
-    "tns-core-modules": "^4.2.0"
+    "tns-core-modules": "^5.0.0-rc-2018-10-16-182917-07"
   },
   "devDependencies": {
     "jasmine-core": "^2.5.2",

@@ -1,9 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="page">
   <StackLayout class="p-20" rows="auto,auto,*" columns="auto,auto">
-    <Button text="View Search" tap="goToSearch"/>
-    <Label row="0" col="0" colSpan="2" text="Add New Item" class="t-20 text-center c-black" textWrap="true"/>
-    <TextField id="input" row="1" hint="Enter text here..." col="0"/>
-    <Button row="1" col="!" text="Add" tap="addNew"/>
+    <SearchBar id="search" row="1" hint="Search here..." col="0" submit="{{search}}"/>
     <ListView row="2" colSpan="2" items="{{items}}">
       <ListView.itemTemplate>
         <GridLayout>
