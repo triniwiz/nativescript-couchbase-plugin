@@ -7,6 +7,7 @@ import {
     ReplicatorBase
 } from './couchbase-plugin.common';
 import * as utils from 'tns-core-modules/utils/utils';
+import * as types from 'tns-core-modules/utils/types';
 
 declare var com, co;
 
@@ -23,56 +24,240 @@ export class Couchbase extends Common {
     }
 
     createDocument(data: Object, documentId?: string) {
-        let doc;
-        if (documentId) {
-            doc = new com.couchbase.lite.MutableDocument(documentId);
-        } else {
-            doc = new com.couchbase.lite.MutableDocument();
-        }
-        const keys = Object.keys(data);
-        for (let key of keys) {
-            const item = data[key];
-            doc.setValue(key, item);
-        }
-        this.android.save(doc);
-        return doc.getId();
-    }
-
-    getDocument(documentId: string): any {
-        const doc = this.android.getDocument(documentId);
-        const keys = doc.getKeys();
-        const size = keys.size();
-        let object = {};
-        for (let i = 0; i < size; i++) {
-            const key = keys.get(i);
-            const item = doc.getValue(key);
-            const newItem = {};
-            newItem[key] = item;
-            object = Object.assign(object, newItem);
-        }
-        return object;
-    }
-
-    updateDocument(documentId: string, data: any) {
-        const origin = this.android.getDocument(documentId);
-        if (origin) {
-            const doc = origin.toMutable();
+        try {
+            let doc;
+            if (documentId) {
+                doc = new com.couchbase.lite.MutableDocument(documentId);
+            } else {
+                doc = new com.couchbase.lite.MutableDocument();
+            }
             const keys = Object.keys(data);
             for (let key of keys) {
                 const item = data[key];
-                doc.setValue(key, item);
+                this.serialize(item, doc, key);
             }
             this.android.save(doc);
+            return doc.getId();
+        } catch (e) {
+            return null;
+        }
+    }
+
+    private deserialize(data: any) {
+        if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || typeof data !== 'object') return data;
+
+        if (types.isNullOrUndefined(data)) {
+            return data;
+        }
+
+        switch (data.getClass().getName()) {
+            case 'java.lang.String':
+                return String(data);
+            case 'java.lang.Boolean':
+                return String(data) === 'true';
+            case 'java.lang.Integer':
+            case 'java.lang.Long':
+            case 'java.lang.Double':
+            case 'java.lang.Short':
+                return Number(data);
+            case 'com.couchbase.lite.Dictionary':
+                const keys = data.getKeys();
+                const length = keys.size();
+                const object = {};
+                for (let i = 0; i < length; i++) {
+                    const key = keys.get(i);
+                    const nativeItem = data.getValue(key);
+                    object[key] = this.deserialize(nativeItem);
+                }
+                return object;
+            case 'com.couchbase.lite.Array':
+                const array = [];
+                const size = data.count();
+                for (let i = 0; i < size; i++) {
+                    const nativeItem = data.getValue(i);
+                    const item = this.deserialize(nativeItem);
+                    array.push(item);
+                }
+                return array;
+            default:
+                return data;
+        }
+    }
+
+    getDocument(documentId: string): any {
+        try {
+            const doc = this.android.getDocument(documentId);
+            if (!doc) return null;
+            const keys = doc.getKeys();
+            const size = keys.size();
+            let object = {};
+            for (let i = 0; i < size; i++) {
+                const key = keys.get(i);
+                const nativeItem = doc.getValue(key);
+                const newItem = {};
+                newItem[key] = this.deserialize(nativeItem);
+                object = Object.assign(object, newItem);
+            }
+            return object;
+        } catch (e) {
+            console.error(e.message);
+            return null;
+        }
+    }
+
+    private fromISO8601UTC(date: string) {
+        const dateFormat = new java.text.SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX');
+        const tz = java.util.TimeZone.getTimeZone('UTC');
+        dateFormat.setTimeZone(tz);
+        return dateFormat.parse(date);
+    }
+
+    private toISO8601UTC(date: Date) {
+        const dateFormat = new java.text.SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX');
+        const tz = java.util.TimeZone.getTimeZone('UTC');
+        dateFormat.setTimeZone(tz);
+
+        return dateFormat.format(date);
+    }
+
+    updateDocument(documentId: string, data: any) {
+        try {
+            const origin = this.android.getDocument(documentId) as com.couchbase.lite.Document;
+            if (origin) {
+                const doc = origin.toMutable();
+                const keys = Object.keys(data);
+                for (let key of keys) {
+                    const item = data[key];
+                    this.serialize(item, doc, key);
+                }
+                this.android.save(doc);
+            }
+        } catch (e) {
+            console.error(e.message);
+        }
+    }
+
+    private serializeObject(item, object, key) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    object.setDate(key, this.fromISO8601UTC(item.toISOString()));
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const array = new com.couchbase.lite.MutableArray();
+                    item.forEach((data) => {
+                        this.serializeArray(data, array);
+                    });
+                    object.setArray(key, array);
+                    return;
+                }
+
+                const nativeObject = new com.couchbase.lite.MutableDictionary();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, nativeObject, itemKey);
+                });
+                object.setDictionary(key, object);
+                break;
+            case 'number':
+                object.setInt(key, item);
+                break;
+            case 'boolean':
+                object.setBoolean(key, item);
+                break;
+            default:
+                object.setValue(key, item);
+        }
+    }
+
+    private serializeArray(item, array: any) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    array.addDate(this.fromISO8601UTC(item.toISOString()));
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const nativeArray = new com.couchbase.lite.MutableArray();
+                    item.forEach((data) => {
+                        this.serializeArray(data, nativeArray);
+                    });
+                    array.addArray(nativeArray);
+                    return;
+                }
+
+                const object = new com.couchbase.lite.MutableDictionary();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, object, itemKey);
+                });
+                array.addDictionary(object);
+                break;
+            case 'number':
+                array.addInt(item);
+                break;
+            case 'boolean':
+                array.addBoolean(item);
+                break;
+            default:
+                array.addValue(item);
+        }
+    }
+
+    private serialize(item, doc: any, key) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    doc.setDate(key, this.fromISO8601UTC(item.toISOString()));
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const array = new com.couchbase.lite.MutableArray();
+                    item.forEach((data) => {
+                        this.serializeArray(data, array);
+                    });
+                    doc.setArray(key, array);
+                    return;
+                }
+
+                const object = new com.couchbase.lite.MutableDictionary();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, object, itemKey);
+                });
+                doc.setDictionary(key, object);
+                break;
+            case 'number':
+                doc.setInt(key, item);
+                break;
+            case 'boolean':
+                doc.setBoolean(key, item);
+                break;
+            default:
+                doc.setValue(key, item);
         }
     }
 
     deleteDocument(documentId: string) {
-        const doc = this.android.getDocument(documentId);
-        return this.android.delete(doc);
+        try {
+            const doc = this.android.getDocument(documentId);
+            return this.android.delete(doc);
+        } catch (e) {
+            console.error(e.message);
+            return false;
+        }
     }
 
     destroyDatabase() {
-        this.android.delete();
+        try {
+            this.android.delete();
+        } catch (e) {
+            console.error(e.message);
+        }
     }
 
     query(query: Query = {select: []}) {

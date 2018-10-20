@@ -1,6 +1,6 @@
 {
     "name": "nativescript-couchbase-plugin",
-    "version": "0.0.3",
+    "version": "0.1.1",
     "description": "NativeScript couchbase",
     "main": "couchbase-plugin",
     "typings": "index.d.ts",
