@@ -44,10 +44,121 @@ export class Couchbase extends Common {
         const keys = Object.keys(data);
         for (let key of keys) {
             const item = data[key];
-            doc.setValueForKey(item, key);
+            this.serialize(item, doc, key);
         }
         this.ios.saveDocumentError(doc);
         return doc.id;
+    }
+
+    private fromISO8601UTC(date: string) {
+        const dateFormatter = NSDateFormatter.new();
+        dateFormatter.dateFormat = 'yyyy-MM-dd\'T\'HH:mm:ss.SSSZ';
+        return dateFormatter.dateFromString(date);
+    }
+
+    private serializeObject(item, object: any, key) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    object.setDateForKey(this.fromISO8601UTC(item.toISOString()), key);
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const array = CBLMutableArray.new();
+                    item.forEach((data) => {
+                        this.serializeArray(data, array);
+                    });
+                    object.setArrayForKey(array, key);
+                    return;
+                }
+
+                const nativeObject = CBLMutableDictionary.new();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, nativeObject, itemKey);
+                });
+                object.setDictionaryForKey(object, key);
+                break;
+            case 'number':
+                object.setIntegerForKey(item, key);
+                break;
+            case 'boolean':
+                object.setBooleanForKey(key, item);
+                break;
+            default:
+                object.setValueForKey(key, item);
+        }
+    }
+
+    private serializeArray(item, array: any) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    array.addDate(this.fromISO8601UTC(item.toISOString()));
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const nativeArray = CBLMutableArray.new();
+                    item.forEach((data) => {
+                        this.serializeArray(data, nativeArray);
+                    });
+                    array.addArray(nativeArray);
+                    return;
+                }
+
+                const object = CBLMutableDictionary.new();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, object, itemKey);
+                });
+                array.addDictionary(object);
+                break;
+            case 'number':
+                array.addInteger(item);
+                break;
+            case 'boolean':
+                array.addBoolean(item);
+                break;
+            default:
+                array.addValue(item);
+        }
+    }
+
+    private serialize(item, doc: any, key) {
+        switch (typeof item) {
+            case 'object':
+                if (item instanceof Date) {
+                    doc.setDateForKey(this.fromISO8601UTC(item.toISOString()), key);
+                    return;
+                }
+
+                if (Array.isArray(item)) {
+                    const array = CBLMutableArray.new();
+                    item.forEach((data) => {
+                        this.serializeArray(data, array);
+                    });
+                    doc.setArrayForKey(array, key);
+                    return;
+                }
+
+                const object = CBLMutableDictionary.new();
+                Object.keys(item).forEach((itemKey) => {
+                    const obj = item[itemKey];
+                    this.serializeObject(obj, object, itemKey);
+                });
+                doc.setDictionaryForKey(object, key);
+                break;
+            case 'number':
+                doc.setIntegerForKey(item, key);
+                break;
+            case 'boolean':
+                doc.setBooleanForKey(item, key);
+                break;
+            default:
+                doc.setValueForKey(item, key);
+        }
     }
 
     getDocument(documentId: string): any {
@@ -66,6 +177,44 @@ export class Couchbase extends Common {
             return obj;
         }
         return null;
+    }
+
+
+    private deserialize(data: any) {
+        if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || typeof data !== 'object') return data;
+
+        if (types.isNullOrUndefined(data)) {
+            return data;
+        }
+
+        if (data instanceof NSNull) {
+            return null;
+        }
+
+        if (data instanceof CBLDictionary) {
+            const keys = data.keys;
+            const length = keys.count;
+            const object = {};
+            for (let i = 0; i < length; i++) {
+                const key = keys.objectAtIndex(i);
+                const nativeItem = data.valueForKey(key);
+                object[key] = this.deserialize(nativeItem);
+            }
+            return object;
+        }
+
+        if (data instanceof CBLArray) {
+            const array = [];
+            const size = data.count;
+            for (let i = 0; i < size; i++) {
+                const nativeItem = data.valueAtIndex(i);
+                const item = this.deserialize(nativeItem);
+                array.push(item);
+            }
+            return array;
+        }
+
+        return data;
     }
 
     updateDocument(documentId: string, data: any) {
@@ -355,7 +504,7 @@ export class Couchbase extends Common {
                     const cblKeysSize = cblKeys.count;
                     for (let cblKeysId = 0; cblKeysId < cblKeysSize; cblKeysId++) {
                         const cblKey = cblKeys.objectAtIndex(cblKeysId);
-                        obj[cblKey] = nativeItem.valueForKey(cblKey);
+                        obj[cblKey] = this.deserialize(nativeItem.valueForKey(cblKey));
                     }
                 }
             }
