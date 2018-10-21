@@ -454,7 +454,7 @@ export class Couchbase extends Common {
                     const cblKeysSize = cblKeys.size();
                     for (let cblKeysId = 0; cblKeysId < cblKeysSize; cblKeysId++) {
                         const cblKey = cblKeys.get(cblKeysId);
-                        obj[cblKey] = nativeItem.getValue(cblKey);
+                        obj[cblKey] = this.deserialize(nativeItem.getValue(cblKey));
                     }
                 }
             }
