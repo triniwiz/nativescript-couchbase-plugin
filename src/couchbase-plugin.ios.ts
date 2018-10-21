@@ -84,10 +84,10 @@ export class Couchbase extends Common {
                 object.setIntegerForKey(item, key);
                 break;
             case 'boolean':
-                object.setBooleanForKey(key, item);
+                object.setBooleanForKey(item, key);
                 break;
             default:
-                object.setValueForKey(key, item);
+                object.setValueForKey(item, key);
         }
     }
 
@@ -171,7 +171,7 @@ export class Couchbase extends Common {
                 const key = keys.objectAtIndex(i);
                 const value = doc.valueForKey(key);
                 const newValue = {};
-                newValue[key] = value;
+                newValue[key] = this.deserialize(value);
                 obj = Object.assign(obj, newValue);
             }
             return obj;
@@ -323,7 +323,7 @@ export class Couchbase extends Common {
         } else {
             query.select.forEach(item => {
                 if (item === QueryMeta.ID) {
-                    select.push(CBLQueryMeta.id());
+                    select.push(CBLQuerySelectResult.expression(CBLQueryMeta.id()));
                 } else if (item === QueryMeta.ALL) {
                     select.push(CBLQuerySelectResult.all());
                 } else {
