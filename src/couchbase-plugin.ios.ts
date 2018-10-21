@@ -348,7 +348,9 @@ export class Couchbase extends Common {
             for (let keyId = 0; keyId < keysSize; keyId++) {
                 const key = keys.objectAtIndex(keyId);
                 const nativeItem = item.valueForKey(key);
-                if (types.getClass(nativeItem) === 'CBLDictionary') {
+                if (typeof nativeItem === 'string') {
+                    obj[key] = nativeItem;
+                } else if (types.getClass(nativeItem) === 'CBLDictionary') {
                     const cblKeys = nativeItem.keys;
                     const cblKeysSize = cblKeys.count;
                     for (let cblKeysId = 0; cblKeysId < cblKeysSize; cblKeysId++) {
