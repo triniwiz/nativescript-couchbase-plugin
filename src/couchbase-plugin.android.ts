@@ -9,6 +9,9 @@ import {
 import * as utils from 'tns-core-modules/utils/utils';
 import * as types from 'tns-core-modules/utils/types';
 
+export {
+    Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
+}from './couchbase-plugin.common';
 declare var com, co;
 
 export class Couchbase extends Common {
@@ -260,17 +263,20 @@ export class Couchbase extends Common {
         }
     }
 
-    query(query: Query = {select: []}) {
+    query(query: Query = {select: [QueryMeta.ALL, QueryMeta.ID]}) {
         const items = [];
         let select = [];
         if (!query.select || query.select.length === 0) {
             select.push(com.couchbase.lite.SelectResult.all());
+            select.push(com.couchbase.lite.SelectResult.expression(com.couchbase.lite.Meta.id));
         } else {
             query.select.forEach(item => {
                 if (item === QueryMeta.ID) {
-                    select.push(com.couchbase.lite.Meta.id);
+                    select.push(com.couchbase.lite.SelectResult.expression(com.couchbase.lite.Meta.id));
+                } else if (item === QueryMeta.ALL) {
+                    select.push(com.couchbase.lite.SelectResult.all());
                 } else {
-                    select.push(com.couchbase.lite.Expression.property(item));
+                    select.push(com.couchbase.lite.SelectResult.property(item));
                 }
             });
         }
