@@ -12,6 +12,7 @@ import * as types from 'tns-core-modules/utils/types';
 export {
     Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
 }from './couchbase-plugin.common';
+
 declare var com, co;
 
 export class Couchbase extends Common {
@@ -263,6 +264,124 @@ export class Couchbase extends Common {
         }
     }
 
+    private setComparision(item) {
+        let nativeQuery;
+        switch (item.comparison as QueryComparisonOperator) {
+            case 'equalTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).equalTo(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'add':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).add(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'between':
+                if (Array.isArray(item.value) && item.value.length === 2) {
+                    nativeQuery = com.couchbase.lite.Expression.property(
+                        item.property
+                    ).between(com.couchbase.lite.Expression.value(item.value[0]), com.couchbase.lite.Expression.value(item.value[1]));
+                }
+                break;
+            case 'collate':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).collate(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'divide':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).divide(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'greaterThan':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).greaterThan(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'greaterThanOrEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).greaterThanOrEqualTo(
+                    com.couchbase.lite.Expression.value(item.value)
+                );
+                break;
+            case 'in':
+                const inArray = [];
+                if (Array.isArray(item.value)) {
+                    for (let exp of item.value) {
+                        inArray.push(com.couchbase.lite.Expression.value(exp));
+                    }
+                } else {
+                    inArray.push(com.couchbase.lite.Expression.value(item.value));
+                }
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).in(inArray);
+                break;
+            case 'is':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).is(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'isNot':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).isNot(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'isNullOrMissing':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).isNullOrMissing();
+                break;
+            case 'lessThan':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).lessThan(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'lessThanOrEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).lessThanOrEqualTo(
+                    com.couchbase.lite.Expression.value(item.value)
+                );
+                break;
+            case 'like':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).like(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'modulo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).modulo(com.couchbase.lite.Expression.value(item.value));
+                break;
+            case 'multiply':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).multiply(com.couchbase.lite.Expression.value(item.value));
+                break;
+
+            case 'notEqualTo':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).notEqualTo(com.couchbase.lite.Expression.value(item.value));
+                break;
+
+            case 'notNullOrMissing':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).notNullOrMissing();
+                break;
+            case 'regex':
+                nativeQuery = com.couchbase.lite.Expression.property(
+                    item.property
+                ).regex(com.couchbase.lite.Expression.value(item.value));
+                break;
+        }
+        return nativeQuery;
+    }
+
     query(query: Query = {select: [QueryMeta.ALL, QueryMeta.ID]}) {
         const items = [];
         let select = [];
@@ -292,115 +411,17 @@ export class Couchbase extends Common {
             );
         }
 
-        let nativeQuery;
+        let nativeQuery = null;
         if (query.where) {
             for (let item of query.where) {
-                if (item === QueryLogicalOperator.AND) {
+                if (item.logical === QueryLogicalOperator.AND) {
                     if (!nativeQuery) break;
-                } else if (item === QueryLogicalOperator.OR) {
+                    nativeQuery = nativeQuery.add(this.setComparision(item));
+                } else if (item.logical === QueryLogicalOperator.OR) {
                     if (!nativeQuery) break;
+                    nativeQuery = nativeQuery.or(this.setComparision(item));
                 } else {
-                    if (item) {
-                        switch (item.comparison as QueryComparisonOperator) {
-                            case 'equalTo':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).equalTo(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'add':
-                                break;
-                            case 'between':
-                                break;
-                            case 'collate':
-                                break;
-                            case 'divide':
-                                break;
-                            case 'greaterThan':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).greaterThan(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'greaterThanOrEqualTo':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).greaterThanOrEqualTo(
-                                    com.couchbase.lite.Expression.value(item.value)
-                                );
-                                break;
-                            case 'in':
-                                const inArray = [];
-                                if (Array.isArray(item.value)) {
-                                    for (let exp of item.value) {
-                                        inArray.push(com.couchbase.lite.Expression.value(exp));
-                                    }
-                                } else {
-                                    inArray.push(com.couchbase.lite.Expression.value(item.value));
-                                }
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).in(inArray);
-                                break;
-                            case 'is':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).is(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'isNot':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).isNot(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'isNullOrMissing':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).isNullOrMissing();
-                                break;
-                            case 'lessThan':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).lessThan(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'lessThanOrEqualTo':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).lessThanOrEqualTo(
-                                    com.couchbase.lite.Expression.value(item.value)
-                                );
-                                break;
-                            case 'like':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).like(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'modulo':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).modulo(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                            case 'multiply':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).multiply(com.couchbase.lite.Expression.value(item.value));
-                                break;
-
-                            case 'notEqualTo':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).notEqualTo(com.couchbase.lite.Expression.value(item.value));
-                                break;
-
-                            case 'notNullOrMissing':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).notNullOrMissing();
-                                break;
-                            case 'regex':
-                                nativeQuery = com.couchbase.lite.Expression.property(
-                                    item.property
-                                ).regex(com.couchbase.lite.Expression.value(item.value));
-                                break;
-                        }
-                    }
+                    nativeQuery = this.setComparision(item);
                 }
             }
             if (nativeQuery) {
