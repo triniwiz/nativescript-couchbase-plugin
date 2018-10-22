@@ -167,6 +167,7 @@ export class Couchbase extends Common {
             let obj = {};
             const keys = doc.keys;
             const size = keys.count;
+            obj['id'] = doc.id;
             for (let i = 0; i < size; i++) {
                 const key = keys.objectAtIndex(i);
                 const value = doc.valueForKey(key);
@@ -178,7 +179,6 @@ export class Couchbase extends Common {
         }
         return null;
     }
-
 
     private deserialize(data: any) {
         if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || typeof data !== 'object') return data;

@@ -95,6 +95,7 @@ export class Couchbase extends Common {
             const keys = doc.getKeys();
             const size = keys.size();
             let object = {};
+            object['id'] = doc.getId();
             for (let i = 0; i < size; i++) {
                 const key = keys.get(i);
                 const nativeItem = doc.getValue(key);
