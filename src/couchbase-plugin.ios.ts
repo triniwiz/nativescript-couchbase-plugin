@@ -307,6 +307,120 @@ export class Couchbase extends Common {
         });
     }
 
+    private setComparision(item) {
+        let nativeQuery;
+        switch (item.comparison as QueryComparisonOperator) {
+            case 'equalTo':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).equalTo(CBLQueryExpression.value(item.value));
+                break;
+            case 'add':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).add(CBLQueryExpression.value(item.value));
+                break;
+            case 'between':
+                if (Array.isArray(item.value) && item.value.length === 2) {
+                    nativeQuery = CBLQueryExpression.property(
+                        item.property
+                    ).between(CBLQueryExpression.value(item.value[0])).andExpression(CBLQueryExpression.value(item.value[1]));
+                }
+                break;
+            case 'collate':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).collate(CBLQueryExpression.value(item.value));
+                break;
+            case 'divide':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).divide(CBLQueryExpression.value(item.value));
+                break;
+            case 'greaterThan':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).greaterThan(CBLQueryExpression.value(item.value));
+                break;
+            case 'greaterThanOrEqualTo':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).greaterThanOrEqualTo(CBLQueryExpression.value(item.value));
+                break;
+            case 'in':
+                const inArray = [];
+                if (Array.isArray(item.value)) {
+                    for (let exp of item.value) {
+                        inArray.push(CBLQueryExpression.value(exp));
+                    }
+                } else {
+                    inArray.push(CBLQueryExpression.value(item.value));
+                }
+                nativeQuery = CBLQueryExpression.property(item.property).in(
+                    inArray
+                );
+                break;
+            case 'is':
+                nativeQuery = CBLQueryExpression.property(item.property).is(
+                    CBLQueryExpression.value(item.value)
+                );
+                break;
+            case 'isNot':
+                nativeQuery = CBLQueryExpression.property(item.property).isNot(
+                    CBLQueryExpression.value(item.value)
+                );
+                break;
+            case 'isNullOrMissing':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).isNullOrMissing();
+                break;
+            case 'lessThan':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).lessThan(CBLQueryExpression.value(item.value));
+                break;
+            case 'lessThanOrEqualTo':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).lessThanOrEqualTo(CBLQueryExpression.value(item.value));
+                break;
+            case 'like':
+                nativeQuery = CBLQueryExpression.property(item.property).like(
+                    CBLQueryExpression.value(item.value)
+                );
+                break;
+            case 'modulo':
+                nativeQuery = CBLQueryExpression.property(item.property).modulo(
+                    CBLQueryExpression.value(item.value)
+                );
+                break;
+            case 'multiply':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).multiply(CBLQueryExpression.value(item.value));
+                break;
+
+            case 'notEqualTo':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).notEqualTo(CBLQueryExpression.value(item.value));
+                break;
+
+            case 'notNullOrMissing':
+                nativeQuery = CBLQueryExpression.property(
+                    item.property
+                ).notNullOrMissing();
+                break;
+            case 'regex':
+                nativeQuery = CBLQueryExpression.property(item.property).regex(
+                    CBLQueryExpression.value(item.value)
+                );
+                break;
+        }
+        return nativeQuery;
+    }
+
     query(query: Query = {select: [QueryMeta.ALL, QueryMeta.ID]}) {
         const items = [];
         let select = [];
@@ -344,106 +458,12 @@ export class Couchbase extends Common {
             for (let item of query.where) {
                 if (item === QueryLogicalOperator.AND) {
                     if (!nativeQuery) break;
+                    nativeQuery.andExpression(this.setComparision(item));
                 } else if (item === QueryLogicalOperator.OR) {
                     if (!nativeQuery) break;
+                    nativeQuery.orExpression(this.setComparision(item));
                 } else {
-                    if (item) {
-                        switch (item.comparison as QueryComparisonOperator) {
-                            case 'equalTo':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).equalTo(CBLQueryExpression.value(item.value));
-                                break;
-                            case 'add':
-                                break;
-                            case 'between':
-                                break;
-                            case 'collate':
-                                break;
-                            case 'divide':
-                                break;
-                            case 'greaterThan':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).greaterThan(CBLQueryExpression.value(item.value));
-                                break;
-                            case 'greaterThanOrEqualTo':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).greaterThanOrEqualTo(CBLQueryExpression.value(item.value));
-                                break;
-                            case 'in':
-                                const inArray = [];
-                                if (Array.isArray(item.value)) {
-                                    for (let exp of item.value) {
-                                        inArray.push(CBLQueryExpression.value(exp));
-                                    }
-                                } else {
-                                    inArray.push(CBLQueryExpression.value(item.value));
-                                }
-                                nativeQuery = CBLQueryExpression.property(item.property).in(
-                                    inArray
-                                );
-                                break;
-                            case 'is':
-                                nativeQuery = CBLQueryExpression.property(item.property).is(
-                                    CBLQueryExpression.value(item.value)
-                                );
-                                break;
-                            case 'isNot':
-                                nativeQuery = CBLQueryExpression.property(item.property).isNot(
-                                    CBLQueryExpression.value(item.value)
-                                );
-                                break;
-                            case 'isNullOrMissing':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).isNullOrMissing();
-                                break;
-                            case 'lessThan':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).lessThan(CBLQueryExpression.value(item.value));
-                                break;
-                            case 'lessThanOrEqualTo':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).lessThanOrEqualTo(CBLQueryExpression.value(item.value));
-                                break;
-                            case 'like':
-                                nativeQuery = CBLQueryExpression.property(item.property).like(
-                                    CBLQueryExpression.value(item.value)
-                                );
-                                break;
-                            case 'modulo':
-                                nativeQuery = CBLQueryExpression.property(item.property).modulo(
-                                    CBLQueryExpression.value(item.value)
-                                );
-                                break;
-                            case 'multiply':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).multiply(CBLQueryExpression.value(item.value));
-                                break;
-
-                            case 'notEqualTo':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).notEqualTo(CBLQueryExpression.value(item.value));
-                                break;
-
-                            case 'notNullOrMissing':
-                                nativeQuery = CBLQueryExpression.property(
-                                    item.property
-                                ).notNullOrMissing();
-                                break;
-                            case 'regex':
-                                nativeQuery = CBLQueryExpression.property(item.property).regex(
-                                    CBLQueryExpression.value(item.value)
-                                );
-                                break;
-                        }
-                    }
+                    nativeQuery = this.setComparision(item);
                 }
             }
         }
