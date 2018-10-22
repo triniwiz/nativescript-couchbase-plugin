@@ -89,6 +89,7 @@ export interface Query {
 }
 
 export interface QueryWhereItem {
+    logical?: QueryLogicalOperator;
     property: string;
     comparison: QueryComparisonOperator;
     value: any;
