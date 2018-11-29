@@ -8,7 +8,7 @@ export class SearchModel extends Observable {
   input = '';
   constructor() {
     super();
-    this.db = new Couchbase('core-demo');
+    this.db = new Couchbase('tns-couchbase');
   }
 
   search(args) {
