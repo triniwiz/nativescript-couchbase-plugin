@@ -39,6 +39,12 @@ export abstract class ReplicatorBase {
     abstract isRunning();
 
     abstract setContinuous(isContinuous: boolean);
+
+    abstract setUserNameAndPassword(username: string, password: string);
+
+    abstract setSessionIdAndCookieName(sessionId: string, cookieName: string);
+
+    abstract setSessionId(sessionId: string);
 }
 
 export enum QueryMeta {
