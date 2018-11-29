@@ -6,9 +6,7 @@
 
 ## Installation
 
-```javascript
-tns plugin add nativescript-couchbase-plugin
-```
+`tns plugin add nativescript-couchbase-plugin`
 
 ## Usage
 **Note Android min-sdk is 19**
@@ -48,9 +46,13 @@ const database = new Couchbase('my-database');
 const push = database.createPushReplication(
   'ws://sync-gateway-host:4984/my-database'
 );
+push.setUserNameAndPassword("user","password");
 const pull = database.createPullReplication(
   'ws://sync-gateway-host:4984/my-database'
 );
+pull.setSessionId("SomeId");
+pull.setSessionIdAndCookieName("SomeId","SomeCookieName");
+
 push.setContinuous(true);
 pull.setContinuous(true);
 push.start();
