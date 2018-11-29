@@ -238,9 +238,7 @@ export class Couchbase extends Common {
     }
 
     createPullReplication(
-        remoteUrl: string,
-        username?: string,
-        password?: string
+        remoteUrl: string
     ) {
         const url = NSURL.alloc().initWithString(remoteUrl);
         const targetEndpoint = CBLURLEndpoint.alloc().initWithURL(url);
@@ -250,27 +248,13 @@ export class Couchbase extends Common {
         );
         replConfig.replicatorType = CBLReplicatorType.kCBLReplicatorTypePull;
 
-        if (username && password) {
-            replConfig.authenticator = CBLBasicAuthenticator.alloc().initWithUsernamePassword(
-                username,
-                password
-            );
-        }
-
         const replicator = CBLReplicator.alloc().initWithConfig(replConfig);
-
         return new Replicator(replicator);
-        /*
-    replicator.addChangeListener((change:CBLReplicatorChange)=>{
-      //"Error code: %ld", change.status.error.code
-    });
-    */
+
     }
 
     createPushReplication(
-        remoteUrl: string,
-        username?: string,
-        password?: string
+        remoteUrl: string
     ) {
         const url = NSURL.alloc().initWithString(remoteUrl);
         const targetEndpoint = CBLURLEndpoint.alloc().initWithURL(url);
@@ -279,13 +263,6 @@ export class Couchbase extends Common {
             targetEndpoint
         );
         replConfig.replicatorType = CBLReplicatorType.kCBLReplicatorTypePush;
-
-        if (username && password) {
-            replConfig.authenticator = CBLBasicAuthenticator.alloc().initWithUsernamePassword(
-                username,
-                password
-            );
-        }
 
         const replicator = CBLReplicator.alloc().initWithConfig(replConfig);
 
@@ -555,6 +532,34 @@ export class Replicator extends ReplicatorBase {
     }
 
     setContinuous(isContinuous: boolean) {
-        this.replicator.config.continuous = isContinuous;
+        const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
+        newConfig.continuous = isContinuous;
+        this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
+    }
+
+    setUserNameAndPassword(username: string, password: string) {
+        const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
+        newConfig.authenticator = CBLBasicAuthenticator.alloc().initWithUsernamePassword(
+            username,
+            password
+        );
+        this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
+    }
+
+    setSessionIdAndCookieName(sessionId: string, cookieName: string) {
+        const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
+        newConfig.authenticator = CBLSessionAuthenticator.alloc().initWithSessionIDCookieName(
+            sessionId,
+            cookieName
+        );
+        this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
+    }
+
+    setSessionId(sessionId: string) {
+        const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
+        newConfig.authenticator = CBLSessionAuthenticator.alloc().initWithSessionID(
+            sessionId
+        );
+        this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
     }
 }
