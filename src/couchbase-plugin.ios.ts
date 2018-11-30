@@ -57,6 +57,10 @@ export class Couchbase extends Common {
     }
 
     private serializeObject(item, object: any, key) {
+        if (item === null) {
+            return;
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
@@ -78,7 +82,7 @@ export class Couchbase extends Common {
                     const obj = item[itemKey];
                     this.serializeObject(obj, nativeObject, itemKey);
                 });
-                object.setDictionaryForKey(object, key);
+                object.setDictionaryForKey(nativeObject, key);
                 break;
             case 'number':
                 object.setIntegerForKey(item, key);
@@ -92,6 +96,10 @@ export class Couchbase extends Common {
     }
 
     private serializeArray(item, array: any) {
+        if (item === null) {
+            return;
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
@@ -127,6 +135,10 @@ export class Couchbase extends Common {
     }
 
     private serialize(item, doc: any, key) {
+        if (item === null) {
+            return;
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
