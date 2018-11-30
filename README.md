@@ -2,7 +2,7 @@
 [![npm](https://img.shields.io/npm/dt/nativescript-couchbase-plugin.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript-couchbase-plugin)
 [![Build Status](https://travis-ci.org/triniwiz/nativescript-couchbase-plugin.svg?branch=master)](https://travis-ci.org/triniwiz/nativescript-couchbase-plugin)
 
-# nativeScript-couchbase
+# NativeScript-Couchbase
 
 ## Installation
 
