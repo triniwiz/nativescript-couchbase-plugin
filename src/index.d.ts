@@ -40,4 +40,11 @@ export declare class Replicator extends ReplicatorBase {
     isRunning(): boolean;
 
     setContinuous(isContinuous: boolean): void;
+
+    setUserNameAndPassword(username: string, password: string): any;
+
+    setSessionIdAndCookieName(sessionId: string, cookieName: string): any;
+
+    setSessionId(sessionId: string): any;
 }
+
