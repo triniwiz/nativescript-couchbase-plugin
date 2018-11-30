@@ -1,5 +1,14 @@
 # Change Log
 
+## [v0.5.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.5.0) (2018-11-30)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.4.1...v0.5.0)
+
+**Merged pull requests:**
+
+- Feature/fix null values [\#7](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/7) ([jerbob92](https://github.com/jerbob92))
+- Fix limit/offset query [\#6](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/6) ([jerbob92](https://github.com/jerbob92))
+- fixed error with not implemented abstract methods [\#5](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/5) ([elcreator](https://github.com/elcreator))
+
 ## [v0.4.1](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.4.1) (2018-11-29)
 [Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.4.0...v0.4.1)
 
