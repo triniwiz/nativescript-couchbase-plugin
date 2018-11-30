@@ -496,7 +496,7 @@ export class Couchbase extends Common {
 
         if (query.limit && typeof query.limit === 'number') {
             queryBuilder = queryBuilder.limit(
-                com.couchbase.lite.Expression.value(query.limit)
+                com.couchbase.lite.Expression.intValue(query.limit)
             );
         }
 
