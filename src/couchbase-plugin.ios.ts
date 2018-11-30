@@ -482,7 +482,11 @@ export class Couchbase extends Common {
         }
 
         if (query.limit && typeof query.limit === 'number') {
-            limit = CBLQueryLimit.limit(CBLQueryExpression.value(query.limit));
+            if (query.offset && typeof query.offset === 'number') {
+                limit = CBLQueryLimit.limitOffset(CBLQueryExpression.integer(query.limit), CBLQueryExpression.integer(query.offset));
+            } else {
+                limit = CBLQueryLimit.limit(CBLQueryExpression.integer(query.limit));
+            }
         }
 
         let queryBuilder = CBLQueryBuilder.selectFromJoinWhereGroupByHavingOrderByLimit(

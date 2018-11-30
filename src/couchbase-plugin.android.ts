@@ -508,9 +508,16 @@ export class Couchbase extends Common {
         }
 
         if (query.limit && typeof query.limit === 'number') {
-            queryBuilder = queryBuilder.limit(
-                com.couchbase.lite.Expression.value(query.limit)
-            );
+            if (query.offset && typeof query.offset === 'number') {
+                queryBuilder = queryBuilder.limit(
+                    com.couchbase.lite.Expression.intValue(query.limit),
+                    com.couchbase.lite.Expression.intValue(query.offset)
+                );
+            } else {
+                queryBuilder = queryBuilder.limit(
+                    com.couchbase.lite.Expression.intValue(query.limit)
+                );
+            }
         }
 
         const result = queryBuilder.execute().allResults();

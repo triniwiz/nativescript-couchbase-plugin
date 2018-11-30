@@ -91,6 +91,7 @@ export interface Query {
     // having?: any;
     order?: QueryOrderItem[];
     limit?: any;
+    offset?: any;
     from?: string;
 }
 
