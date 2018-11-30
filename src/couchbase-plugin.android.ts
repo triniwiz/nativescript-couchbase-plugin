@@ -49,6 +49,7 @@ export class Couchbase extends Common {
             this.android.save(doc);
             return doc.getId();
         } catch (e) {
+            console.error(e.message);
             return null;
         }
     }
@@ -161,6 +162,11 @@ export class Couchbase extends Common {
     }
 
     private serializeObject(item, object, key) {
+        if (item === null) {
+            object.setValue(key, item);
+            return;
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
@@ -200,6 +206,11 @@ export class Couchbase extends Common {
     }
 
     private serializeArray(item, array: any) {
+        if (item === null) {
+            array.addValue(item);
+            return
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
@@ -239,6 +250,11 @@ export class Couchbase extends Common {
     }
 
     private serialize(item, doc: any, key) {
+        if (item === null) {
+            doc.setValue(key, item);
+            return;
+        }
+
         switch (typeof item) {
             case 'object':
                 if (item instanceof Date) {
