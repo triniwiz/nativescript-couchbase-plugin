@@ -28,6 +28,8 @@ export declare class Couchbase extends Common {
     createPushReplication(remoteUrl: string, username?: string, password?: string): Replicator;
 
     addDatabaseChangeListener(callback: any): void;
+
+    inBatch(batch: () => void): void;
 }
 
 export declare class Replicator extends ReplicatorBase {

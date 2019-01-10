@@ -33,6 +33,11 @@ export class Couchbase extends Common {
         this.ios = CBLDatabase.alloc().initWithNameError(databaseName);
     }
 
+    inBatch(batch: () => void) {
+        const errorRef = new interop.Reference();
+        this.ios.inBatchUsingBlock(errorRef, batch);
+    }
+
     createDocument(data: Object, documentId?: string) {
         let doc;
         if (documentId) {
