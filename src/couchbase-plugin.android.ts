@@ -33,6 +33,16 @@ export class Couchbase extends Common {
         this.android = new com.couchbase.lite.Database(name, this.config);
     }
 
+    inBatch(batch: () => void) {
+        const runnable = new java.lang.Runnable({
+            run: () => {
+                batch();
+            }
+        });
+
+        this.android.inBatch(runnable);
+    }
+
     createDocument(data: Object, documentId?: string) {
         try {
             let doc;

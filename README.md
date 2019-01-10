@@ -82,6 +82,36 @@ const results = database.query({
 });
 ```
 
+### Transactions
+Using the method `inBatch` to run group of database operations in a batch/transaction. Use this when performing bulk write operations like multiple inserts/updates; it saves the overhead of multiple database commits, greatly improving performance.
+
+```ts
+import { Couchbase } from 'nativescript-couchbase-plugin';
+const database = new Couchbase('my-database');
+
+database.inBatch(() => {
+    const documentId = database.createDocument({
+        "firstname": "O",
+        "lastname": "Fortune",
+        "address": {
+            "country": "Trinidad and Tobago"
+        }
+        "twitter": "https://www.twitter.com/triniwiz"
+    });
+    
+    const person = database.getDocument(documentId);
+    
+    
+    database.updateDocument(documentId, {
+        "firstname": "Osei",
+        "lastname": "Fortune",
+        "twitter": "https://www.twitter.com/triniwiz"
+    });
+    
+    const isDeleted = database.deleteDocument(documentId);
+});
+```
+
 ## API
 
 ## License
