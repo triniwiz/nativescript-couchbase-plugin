@@ -1,5 +1,16 @@
 # Change Log
 
+## [v0.6.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.6.0) (2019-01-10)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.5.0...v0.6.0)
+
+**Closed issues:**
+
+- Receiving this error when attempting to use this plugin? [\#8](https://github.com/triniwiz/nativescript-couchbase-plugin/issues/8)
+
+**Merged pull requests:**
+
+- Add support for inBatch [\#9](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/9) ([jerbob92](https://github.com/jerbob92))
+
 ## [v0.5.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.5.0) (2018-11-30)
 [Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.4.1...v0.5.0)
 
