@@ -496,10 +496,10 @@ export class Couchbase extends Common {
             for (let item of query.where) {
                 if (item === QueryLogicalOperator.AND) {
                     if (!nativeQuery) break;
-                    nativeQuery.andExpression(this.setComparision(item));
+                    nativeQuery = nativeQuery.andExpression(this.setComparision(item));
                 } else if (item === QueryLogicalOperator.OR) {
                     if (!nativeQuery) break;
-                    nativeQuery.orExpression(this.setComparision(item));
+                    nativeQuery = nativeQuery.orExpression(this.setComparision(item));
                 } else {
                     nativeQuery = this.setComparision(item);
                 }
