@@ -90,7 +90,19 @@ export class Couchbase extends Common {
                 object.setDictionaryForKey(nativeObject, key);
                 break;
             case 'number':
-                object.setIntegerForKey(item, key);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        object.setDoubleForKey(item, key);
+                    } else {
+                        object.setLongLongForKey(item, key);
+                    }
+                } else {
+                    if (this.numberHasDecimals(item)) {
+                        object.setFloatForKey(item, key);
+                    } else {
+                        object.setIntegerForKey(item, key);
+                    }
+                }
                 break;
             case 'boolean':
                 object.setBooleanForKey(item, key);
@@ -129,7 +141,19 @@ export class Couchbase extends Common {
                 array.addDictionary(object);
                 break;
             case 'number':
-                array.addInteger(item);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        array.addDouble(item);
+                    } else {
+                        array.addLongLong(item);
+                    }
+                } else {
+                    if (this.numberHasDecimals(item)) {
+                        array.addFloat(item);
+                    } else {
+                        array.addInteger(item);
+                    }
+                }
                 break;
             case 'boolean':
                 array.addBoolean(item);
@@ -168,7 +192,19 @@ export class Couchbase extends Common {
                 doc.setDictionaryForKey(object, key);
                 break;
             case 'number':
-                doc.setIntegerForKey(item, key);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        doc.setDoubleForKey(item, key);
+                    } else {
+                        doc.setLongLongForKey(item, key);
+                    }
+                } else {
+                    if (this.numberHasDecimals(item)) {
+                        doc.setFloatForKey(item, key);
+                    } else {
+                        doc.setIntegerForKey(item, key);
+                    }
+                }
                 break;
             case 'boolean':
                 doc.setBooleanForKey(item, key);
@@ -195,6 +231,14 @@ export class Couchbase extends Common {
             return obj;
         }
         return null;
+    }
+
+    numberHasDecimals(item: number) {
+        return !(item % 1 === 0);
+    }
+
+    numberIs64Bit(item: number) {
+        return item < -Math.pow(2, 31) + 1 || item > Math.pow(2, 31) - 1;
     }
 
     private deserialize(data: any) {
