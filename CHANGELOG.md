@@ -1,5 +1,29 @@
 # Change Log
 
+## [Unreleased](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/HEAD)
+
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.8.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add blob/attachment [\#2](https://github.com/triniwiz/nativescript-couchbase-plugin/issues/2)
+
+## [v0.8.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.8.0) (2019-01-22)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.7.0...v0.8.0)
+
+**Merged pull requests:**
+
+- Fix logical type check [\#13](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/13) ([jerbob92](https://github.com/jerbob92))
+- Fix bug in operator support for iOS [\#12](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/12) ([jerbob92](https://github.com/jerbob92))
+- Add missing float in number support [\#11](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/11) ([jerbob92](https://github.com/jerbob92))
+
+## [v0.7.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.7.0) (2019-01-22)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.6.0...v0.7.0)
+
+**Merged pull requests:**
+
+- Add support for long/float/double [\#10](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/10) ([jerbob92](https://github.com/jerbob92))
+
 ## [v0.6.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.6.0) (2019-01-10)
 [Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.5.0...v0.6.0)
 
