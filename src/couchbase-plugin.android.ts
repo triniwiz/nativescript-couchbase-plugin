@@ -200,10 +200,18 @@ export class Couchbase extends Common {
                 object.setDictionary(key, nativeObject);
                 break;
             case 'number':
-                if (item <= Math.pow(2, 31) - 1) {
-                    object.setInt(key, item);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        object.setDouble(key, item);
+                    } else {
+                        object.setLong(key, item);
+                    }
                 } else {
-                    object.setLong(key, item);
+                    if (this.numberHasDecimals(item)) {
+                        object.setFloat(key, item);
+                    } else {
+                        object.setInt(key, item);
+                    }
                 }
                 break;
             case 'boolean':
@@ -243,10 +251,18 @@ export class Couchbase extends Common {
                 array.addDictionary(object);
                 break;
             case 'number':
-                if (item <= Math.pow(2, 31) - 1) {
-                    array.addInt(item);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        array.addDouble(item);
+                    } else {
+                        array.addLong(item);
+                    }
                 } else {
-                    array.addLong(item);
+                    if (this.numberHasDecimals(item)) {
+                        array.addFloat(item);
+                    } else {
+                        array.addInt(item);
+                    }
                 }
                 break;
             case 'boolean':
@@ -286,10 +302,18 @@ export class Couchbase extends Common {
                 doc.setDictionary(key, object);
                 break;
             case 'number':
-                if (item <= Math.pow(2, 31) - 1) {
-                    doc.setInt(key, item);
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        doc.setDouble(key, item);
+                    } else {
+                        doc.setLong(key, item);
+                    }
                 } else {
-                    doc.setLong(key, item);
+                    if (this.numberHasDecimals(item)) {
+                        doc.setFloat(key, item);
+                    } else {
+                        doc.setInt(key, item);
+                    }
                 }
                 break;
             case 'boolean':
@@ -298,6 +322,14 @@ export class Couchbase extends Common {
             default:
                 doc.setValue(key, item);
         }
+    }
+
+    numberHasDecimals(item: number) {
+        return !(item % 1 === 0);
+    }
+
+    numberIs64Bit(item: number) {
+        return item < -Math.pow(2, 31) + 1 || item > Math.pow(2, 31) - 1;
     }
 
     deleteDocument(documentId: string) {
