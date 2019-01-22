@@ -86,6 +86,7 @@ export class Couchbase extends Common {
             case 'java.lang.Long':
             case 'java.lang.Double':
             case 'java.lang.Short':
+            case 'java.lang.Float':
                 return Number(data);
             case 'com.couchbase.lite.Dictionary':
                 const keys = data.getKeys();
