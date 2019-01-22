@@ -15,6 +15,8 @@ export declare class Couchbase extends Common {
 
     setBlob(id: string, name: string, blob: any, mimeType?: string): void;
 
+    getBlob(id: string, name: string): Blob;
+
     getDocument(documentId: string): any;
 
     updateDocument(documentId: string, data: any): void;

@@ -1,4 +1,5 @@
 import {
+    BlobBase,
     Common,
     Query,
     QueryComparisonOperator,
@@ -96,7 +97,7 @@ export class Couchbase extends Common {
         if (!document) return null;
         const blob = document.blobForKey(name);
         if (!blob) return null;
-        return blob.content;
+        return new Blob(blob);
     }
 
     private fromISO8601UTC(date: string) {
@@ -686,6 +687,60 @@ export class Replicator extends ReplicatorBase {
         this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
     }
 }
+
+
+export class Blob extends BlobBase {
+
+    constructor(blob: any) {
+        super(blob);
+    }
+
+    get ios() {
+        return this.blob;
+    }
+
+    get content(): any {
+        if (!this.ios) return null;
+        return this.ios.content;
+    }
+
+    get contentStream(): any {
+        if (!this.ios) return null;
+        return this.ios.contentStream;
+    }
+
+    get contentType(): string {
+        if (!this.ios) return null;
+        return this.ios.contentType;
+    }
+
+    get length(): number {
+        if (!this.ios) return 0;
+        return this.ios.length;
+    }
+
+
+    get digest(): string {
+        if (!this.ios) return null;
+        return this.ios.digest;
+    }
+
+    get properties(): Map<string, any> {
+        const map = new Map();
+        if (!this.ios) return map;
+        const nativeMap = this.ios.properties;
+        const mapKeysArray = nativeMap.allKeys;
+        const length = mapKeysArray.count;
+        for (let i = 0; i < length; i++) {
+            const key = mapKeysArray[i];
+            const value = nativeMap.valueForKey(key);
+            map.set(key, value);
+        }
+        return map;
+    }
+
+}
+
 
 let DEFAULT_MIME_TYPE = 'application/octet-stream';
 

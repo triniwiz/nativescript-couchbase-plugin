@@ -1,4 +1,5 @@
 import {
+    BlobBase,
     Common,
     Query,
     QueryComparisonOperator,
@@ -101,7 +102,7 @@ export class Couchbase extends Common {
         if (!document) return null;
         const blob = document.getBlob(name);
         if (!blob) return null;
-        return blob.getContent();
+        return new Blob(blob);
     }
 
     private deserialize(data: any) {
@@ -741,4 +742,56 @@ export class Replicator extends ReplicatorBase {
         );
         this.replicator = new com.couchbase.lite.Replicator(newConfig);
     }
+}
+
+export class Blob extends BlobBase {
+    constructor(blob: any) {
+        super(blob);
+    }
+
+    get android() {
+        return this.blob;
+    }
+
+    get content(): any {
+        if (!this.android) return null;
+        return this.android.getContent();
+    }
+
+    get contentStream(): any {
+        if (!this.android) return null;
+        this.android.length();
+        return this.android.getContentStream();
+    }
+
+    get contentType(): string {
+        if (!this.android) return null;
+        return this.android.getContentType();
+    }
+
+    get length(): number {
+        if (!this.android) return 0;
+        return this.android.length();
+    }
+
+    get digest(): string {
+        if (!this.android) return null;
+        return this.android.digest();
+    }
+
+    get properties(): Map<string, any> {
+        const map = new Map();
+        if (!this.android) return map;
+        const nativeMap = this.android.getProperties();
+        const mapKeys = nativeMap.keySet();
+        const mapKeysArray = mapKeys.toArray();
+        const length = mapKeysArray.length;
+        for (let i = 0; i < length; i++) {
+            const key = mapKeysArray[i];
+            const value = nativeMap.get(key);
+            map.set(key, value);
+        }
+        return map;
+    }
+
 }

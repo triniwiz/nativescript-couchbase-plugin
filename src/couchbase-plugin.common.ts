@@ -114,3 +114,28 @@ export interface QueryOrderItem {
     property: string;
     direction: 'asc' | 'desc';
 }
+
+
+export abstract class BlobBase {
+    blob: any;
+
+    readonly ios: any;
+
+    readonly android: any;
+
+    readonly content: any;
+
+    readonly contentStream: any;
+
+    readonly contentType: string;
+
+    readonly length: number;
+
+    readonly digest: string;
+
+    readonly properties: Map<string, any>;
+
+    constructor(blob: any) {
+        this.blob = blob;
+    }
+}
