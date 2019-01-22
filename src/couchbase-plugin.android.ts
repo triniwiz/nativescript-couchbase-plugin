@@ -8,6 +8,7 @@ import {
 } from './couchbase-plugin.common';
 import * as utils from 'tns-core-modules/utils/utils';
 import * as types from 'tns-core-modules/utils/types';
+import * as fs from 'tns-core-modules/file-system';
 
 export {
     Query,
@@ -61,6 +62,37 @@ export class Couchbase extends Common {
         } catch (e) {
             console.error(e.message);
             return null;
+        }
+    }
+
+    setBlob(id: string, name: string, blob: any, mimeType: string = 'application/octet-stream') {
+        try {
+            const document = this.android.getDocument(id).toMutable();
+            if (typeof blob === 'string') {
+                if (blob.startsWith(`file`)) {
+                    const nativeBlob = new com.couchbase.lite.Blob(mimeType, new java.net.URL(blob));
+                    document.setBlob(name, nativeBlob);
+                } else if (blob.startsWith(`/`)) {
+                    const nativeBlob = new com.couchbase.lite.Blob(mimeType, new java.net.URL(`file://${blob}`));
+                    document.setBlob(name, nativeBlob);
+                } else if (blob.startsWith(`~`)) {
+                    const path = fs.path.join(fs.knownFolders.currentApp().path, blob.replace('~', ''));
+                    const nativeBlob = new com.couchbase.lite.Blob(mimeType, new java.net.URL(`file://${path}`));
+                    document.setBlob(name, nativeBlob);
+                } else if (blob.startsWith(`res`)) {
+                    const ctx = utils.ad.getApplicationContext() as android.content.Context;
+                    const is = ctx.getAssets().open(blob.replace('res://', ''));
+                    const nativeBlob = new com.couchbase.lite.Blob(mimeType, is);
+                    document.setBlob(name, nativeBlob);
+                } else {
+                    // TODO what else to check?
+                }
+                this.android.save(document);
+            } else {
+                // TODO what else to check ... maybe native objects ??
+            }
+        } catch (e) {
+            console.debug(e);
         }
     }
 
@@ -225,7 +257,7 @@ export class Couchbase extends Common {
 
     private serializeArray(item, array: any) {
         if (item === null) {
-            return
+            return;
         }
 
         switch (typeof item) {
@@ -594,35 +626,43 @@ export class Couchbase extends Common {
         return items;
     }
 
-    createPullReplication(
-        remoteUrl: string
-    ) {
+    createReplication(remoteUrl: string, direction: 'push' | 'pull' | 'both') {
+
         const uri = new com.couchbase.lite.URLEndpoint(new java.net.URI(remoteUrl));
         const repConfig = new com.couchbase.lite.ReplicatorConfiguration(
             this.android,
             uri
         );
-        repConfig.setReplicatorType(
-            com.couchbase.lite.ReplicatorConfiguration.ReplicatorType.PULL
-        );
+        if (direction === 'pull') {
+            repConfig.setReplicatorType(
+                com.couchbase.lite.ReplicatorConfiguration.ReplicatorType.PULL
+            );
+        } else if (direction === 'push') {
+            repConfig.setReplicatorType(
+                com.couchbase.lite.ReplicatorConfiguration.ReplicatorType.PUSH
+            );
+        } else {
+            repConfig.setReplicatorType(
+                com.couchbase.lite.ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL
+            );
+        }
+
         const replicator = new com.couchbase.lite.Replicator(repConfig);
 
         return new Replicator(replicator);
+
+    }
+
+    createPullReplication(
+        remoteUrl: string
+    ) {
+        return this.createReplication(remoteUrl, 'pull');
     }
 
     createPushReplication(
         remoteUrl: string
     ) {
-        const uri = new com.couchbase.lite.URLEndpoint(new java.net.URI(remoteUrl));
-        const repConfig = new com.couchbase.lite.ReplicatorConfiguration(
-            this.android,
-            uri
-        );
-        repConfig.setReplicatorType(
-            com.couchbase.lite.ReplicatorConfiguration.ReplicatorType.PUSH
-        );
-        const replicator = new com.couchbase.lite.Replicator(repConfig);
-        return new Replicator(replicator);
+        return this.createReplication(remoteUrl, 'push');
     }
 
     addDatabaseChangeListener(callback: any) {

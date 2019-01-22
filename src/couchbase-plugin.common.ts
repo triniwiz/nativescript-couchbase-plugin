@@ -22,6 +22,8 @@ export abstract class Common {
 
     abstract createPushReplication(remoteUrl: string);
 
+    abstract createReplication(remoteUrl: string, direction: 'push' | 'pull' | 'both');
+
     abstract addDatabaseChangeListener(callback: any);
 
     abstract inBatch(batch: () => void);

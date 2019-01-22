@@ -13,6 +13,8 @@ export declare class Couchbase extends Common {
 
     createDocument(data: Object, documentId?: string): any;
 
+    setBlob(id: string, name: string, blob: any, mimeType?: string): void;
+
     getDocument(documentId: string): any;
 
     updateDocument(documentId: string, data: any): void;
@@ -22,6 +24,8 @@ export declare class Couchbase extends Common {
     destroyDatabase(): void;
 
     query(query?: Query): any[];
+
+    createReplication(remoteUrl: string, direction: 'push' | 'pull' | 'both'): Replicator;
 
     createPullReplication(remoteUrl: string, username?: string, password?: string): Replicator;
 
