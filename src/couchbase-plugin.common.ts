@@ -27,6 +27,10 @@ export abstract class Common {
     abstract addDatabaseChangeListener(callback: any);
 
     abstract inBatch(batch: () => void);
+
+    abstract setBlob(id: string, name: string, blob: any, mimeType: string);
+
+    abstract getBlob(id: string, name: string);
 }
 
 export abstract class ReplicatorBase {

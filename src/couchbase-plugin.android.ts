@@ -96,6 +96,14 @@ export class Couchbase extends Common {
         }
     }
 
+    getBlob(id: string, name: string) {
+        let document = this.android.getDocument(id) as com.couchbase.lite.Document;
+        if (!document) return null;
+        const blob = document.getBlob(name);
+        if (!blob) return null;
+        return blob.getContent();
+    }
+
     private deserialize(data: any) {
         if (
             typeof data === 'string' ||

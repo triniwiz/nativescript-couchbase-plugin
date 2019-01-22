@@ -91,6 +91,14 @@ export class Couchbase extends Common {
         }
     }
 
+    getBlob(id: string, name: string) {
+        let document = this.ios.documentWithID(id) as CBLDocument;
+        if (!document) return null;
+        const blob = document.blobForKey(name);
+        if (!blob) return null;
+        return blob.content;
+    }
+
     private fromISO8601UTC(date: string) {
         const dateFormatter = NSDateFormatter.new();
         dateFormatter.dateFormat = 'yyyy-MM-dd\'T\'HH:mm:ss.SSSZ';
