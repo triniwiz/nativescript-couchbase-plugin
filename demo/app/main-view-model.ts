@@ -1,22 +1,20 @@
 import { Observable } from 'tns-core-modules/data/observable';
 import { Couchbase, Replicator } from 'nativescript-couchbase-plugin';
 import { ObservableArray } from 'tns-core-modules/data/observable-array/observable-array';
+import * as http from 'tns-core-modules/http';
 
 export class HelloWorldModel extends Observable {
     public message: string;
     private db: Couchbase;
     items: ObservableArray<any> = new ObservableArray([]);
     input: string = '';
-    pushRep: Replicator;
-    pullRep: Replicator;
+    replicator: Replicator;
 
     constructor() {
         super();
         this.db = new Couchbase('tns-couchbase');
-        this.pullRep = this.db.createPullReplication('ws://192.168.0.10:4984/tns-couchbase');
-        this.pullRep.setContinuous(true);
-        this.pushRep = this.db.createPushReplication('ws://192.168.0.10:4984/tns-couchbase');
-        this.pushRep.setContinuous(true);
+        this.replicator = this.db.createReplication('ws://192.168.0.10:4984/tns-couchbase', 'both');
+        this.replicator.setContinuous(true);
         this.db.addDatabaseChangeListener(changes => {
             for (let change of changes) {
                 const doc = this.db.getDocument(change);
@@ -44,16 +42,33 @@ export class HelloWorldModel extends Observable {
                 }
             }
         });
-        this.pushRep.start();
-        this.pullRep.start();
+        this.replicator.start();
         const query = this.db.query();
         this.items.push(...query);
     }
 
     addItem() {
-        this.db.createDocument({
+        const id = this.db.createDocument({
             title: this.input,
             created_at: new Date().toJSON()
+        });
+        http.getJSON('https://randomuser.me/api/').then((json: any) => {
+            const result = json.results;
+            return result[0].picture.large;
+        }).then(url => {
+            return http.getFile(url).then(file => {
+                this.db.setBlob(id, 'image', file.path, 'image/png');
+            });
+        }).catch(e => {
+            console.log('error getting ' + e);
+        });
+    }
+
+    generateId(): string {
+        return 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0,
+                v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
         });
     }
 }

@@ -1,6 +1,6 @@
 {
   "nativescript": {
-    "id": "org.nativescript.demo",
+    "id": "com.github.triniwiz.couchbase.plugin.demo",
     "tns-ios": {
       "version": "5.0.0-rc-2018-10-12-131715-01"
     },
