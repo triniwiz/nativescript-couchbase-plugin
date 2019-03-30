@@ -21,7 +21,7 @@ const documentId = database.createDocument({
     "lastname": "Fortune",
     "address": {
         "country": "Trinidad and Tobago"
-    }
+    },
     "twitter": "https://www.twitter.com/triniwiz"
 });
 
