@@ -1,8 +1,21 @@
 # Change Log
 
-## [Unreleased](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/HEAD)
+## [0.9.1](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/0.9.1) (2019-04-04)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.9.0...0.9.1)
 
-[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.8.0...HEAD)
+**Fixed bugs:**
+
+- Serialize comparison values [\#18](https://github.com/triniwiz/nativescript-couchbase-plugin/issues/18)
+
+**Merged pull requests:**
+
+- Update README.md [\#17](https://github.com/triniwiz/nativescript-couchbase-plugin/pull/17) ([cfjedimaster](https://github.com/cfjedimaster))
+
+## [v0.9.0](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.9.0) (2019-01-22)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.8.1...v0.9.0)
+
+## [v0.8.1](https://github.com/triniwiz/nativescript-couchbase-plugin/tree/v0.8.1) (2019-01-22)
+[Full Changelog](https://github.com/triniwiz/nativescript-couchbase-plugin/compare/v0.8.0...v0.8.1)
 
 **Implemented enhancements:**
 
