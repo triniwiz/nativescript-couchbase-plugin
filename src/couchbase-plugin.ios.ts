@@ -390,54 +390,89 @@ export class Couchbase extends Common {
         });
     }
 
+    private serializeExpression(item) {
+        if (item === null) {
+            return null;
+        }
+
+        switch (typeof item) {
+            case 'string':
+                return CBLQueryExpression.string(item);
+            case 'object':
+                if (item instanceof Date) {
+                    return CBLQueryExpression.date(this.fromISO8601UTC(item.toISOString()));
+                }
+                return CBLQueryExpression.value(item);
+
+            case 'number':
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        return CBLQueryExpression.double(item);
+                    } else {
+                        return CBLQueryExpression.longLong(item);
+                    }
+                } else {
+                    if (this.numberHasDecimals(item)) {
+                        return CBLQueryExpression.float(item);
+                    } else {
+                        return CBLQueryExpression.integer(item);
+                    }
+                }
+            case 'boolean':
+                return CBLQueryExpression.boolean(item);
+            default:
+                return CBLQueryExpression.value(item);
+        }
+    }
+
     private setComparision(item) {
         let nativeQuery;
         switch (item.comparison as QueryComparisonOperator) {
             case 'equalTo':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).equalTo(CBLQueryExpression.value(item.value));
+                ).equalTo(this.serializeExpression(item.value));
                 break;
             case 'add':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).add(CBLQueryExpression.value(item.value));
+                ).add(this.serializeExpression(item.value));
                 break;
             case 'between':
                 if (Array.isArray(item.value) && item.value.length === 2) {
                     nativeQuery = CBLQueryExpression.property(
                         item.property
-                    ).between(CBLQueryExpression.value(item.value[0])).andExpression(CBLQueryExpression.value(item.value[1]));
+                    ).between(this.serializeExpression(item.value[0])).andExpression(this.serializeExpression(item.value[1]));
                 }
                 break;
             case 'collate':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).collate(CBLQueryExpression.value(item.value));
+                ).collate(this.serializeExpression(item.value));
                 break;
             case 'divide':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).divide(CBLQueryExpression.value(item.value));
+                ).divide(this.serializeExpression(item.value));
                 break;
             case 'greaterThan':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).greaterThan(CBLQueryExpression.value(item.value));
+                ).greaterThan(this.serializeExpression(item.value));
                 break;
             case 'greaterThanOrEqualTo':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).greaterThanOrEqualTo(CBLQueryExpression.value(item.value));
+                ).greaterThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'in':
                 const inArray = [];
                 if (Array.isArray(item.value)) {
                     for (let exp of item.value) {
-                        inArray.push(CBLQueryExpression.value(exp));
+                        inArray.push(this.serializeExpression(exp));
                     }
                 } else {
-                    inArray.push(CBLQueryExpression.value(item.value));
+                    inArray.push(this.serializeExpression(item.value));
                 }
                 nativeQuery = CBLQueryExpression.property(item.property).in(
                     inArray
@@ -445,12 +480,12 @@ export class Couchbase extends Common {
                 break;
             case 'is':
                 nativeQuery = CBLQueryExpression.property(item.property).is(
-                    CBLQueryExpression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'isNot':
                 nativeQuery = CBLQueryExpression.property(item.property).isNot(
-                    CBLQueryExpression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'isNullOrMissing':
@@ -461,33 +496,33 @@ export class Couchbase extends Common {
             case 'lessThan':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).lessThan(CBLQueryExpression.value(item.value));
+                ).lessThan(this.serializeExpression(item.value));
                 break;
             case 'lessThanOrEqualTo':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).lessThanOrEqualTo(CBLQueryExpression.value(item.value));
+                ).lessThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'like':
                 nativeQuery = CBLQueryExpression.property(item.property).like(
-                    CBLQueryExpression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'modulo':
                 nativeQuery = CBLQueryExpression.property(item.property).modulo(
-                    CBLQueryExpression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'multiply':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).multiply(CBLQueryExpression.value(item.value));
+                ).multiply(this.serializeExpression(item.value));
                 break;
 
             case 'notEqualTo':
                 nativeQuery = CBLQueryExpression.property(
                     item.property
-                ).notEqualTo(CBLQueryExpression.value(item.value));
+                ).notEqualTo(this.serializeExpression(item.value));
                 break;
 
             case 'notNullOrMissing':
@@ -497,7 +532,7 @@ export class Couchbase extends Common {
                 break;
             case 'regex':
                 nativeQuery = CBLQueryExpression.property(item.property).regex(
-                    CBLQueryExpression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
         }

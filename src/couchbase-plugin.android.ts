@@ -392,17 +392,52 @@ export class Couchbase extends Common {
         }
     }
 
+    private serializeExpression(item) {
+        if (item === null) {
+            return null;
+        }
+
+        switch (typeof item) {
+            case 'string':
+                return com.couchbase.lite.Expression.string(item);
+            case 'object':
+                if (item instanceof Date) {
+                    return com.couchbase.lite.Expression.date(this.fromISO8601UTC(item.toISOString()));
+                }
+                return com.couchbase.lite.Expression.value(item);
+
+            case 'number':
+                if (this.numberIs64Bit(item)) {
+                    if (this.numberHasDecimals(item)) {
+                        return com.couchbase.lite.Expression.doubleValue(item);
+                    } else {
+                        return com.couchbase.lite.Expression.longValue(item);
+                    }
+                } else {
+                    if (this.numberHasDecimals(item)) {
+                        return com.couchbase.lite.Expression.floatValue(item);
+                    } else {
+                        return com.couchbase.lite.Expression.intValue(item);
+                    }
+                }
+            case 'boolean':
+                return com.couchbase.lite.Expression.booleanValue(item);
+            default:
+                return com.couchbase.lite.Expression.value(item);
+        }
+    }
+
     private setComparision(item) {
         let nativeQuery;
         switch (item.comparison as QueryComparisonOperator) {
             case 'equalTo':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).equalTo(com.couchbase.lite.Expression.value(item.value));
+                ).equalTo(this.serializeExpression(item.value));
                 break;
             case 'add':
                 nativeQuery = com.couchbase.lite.Expression.property(item.property).add(
-                    com.couchbase.lite.Expression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'between':
@@ -410,39 +445,39 @@ export class Couchbase extends Common {
                     nativeQuery = com.couchbase.lite.Expression.property(
                         item.property
                     ).between(
-                        com.couchbase.lite.Expression.value(item.value[0]),
-                        com.couchbase.lite.Expression.value(item.value[1])
+                        com.couchbase.lite.Expression.value(this.serializeExpression(item.value[0])),
+                        com.couchbase.lite.Expression.value(this.serializeExpression(item.value[1]))
                     );
                 }
                 break;
             case 'collate':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).collate(com.couchbase.lite.Expression.value(item.value));
+                ).collate(this.serializeExpression(item.value));
                 break;
             case 'divide':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).divide(com.couchbase.lite.Expression.value(item.value));
+                ).divide(this.serializeExpression(item.value));
                 break;
             case 'greaterThan':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).greaterThan(com.couchbase.lite.Expression.value(item.value));
+                ).greaterThan(this.serializeExpression(item.value));
                 break;
             case 'greaterThanOrEqualTo':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).greaterThanOrEqualTo(com.couchbase.lite.Expression.value(item.value));
+                ).greaterThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'in':
                 const inArray = [];
                 if (Array.isArray(item.value)) {
                     for (let exp of item.value) {
-                        inArray.push(com.couchbase.lite.Expression.value(exp));
+                        inArray.push(this.serializeExpression(exp));
                     }
                 } else {
-                    inArray.push(com.couchbase.lite.Expression.value(item.value));
+                    inArray.push(this.serializeExpression(item.value));
                 }
                 nativeQuery = com.couchbase.lite.Expression.property(item.property).in(
                     inArray
@@ -450,13 +485,13 @@ export class Couchbase extends Common {
                 break;
             case 'is':
                 nativeQuery = com.couchbase.lite.Expression.property(item.property).is(
-                    com.couchbase.lite.Expression.value(item.value)
+                    this.serializeExpression(item.value)
                 );
                 break;
             case 'isNot':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).isNot(com.couchbase.lite.Expression.value(item.value));
+                ).isNot(this.serializeExpression(item.value));
                 break;
             case 'isNullOrMissing':
                 nativeQuery = com.couchbase.lite.Expression.property(
@@ -466,33 +501,33 @@ export class Couchbase extends Common {
             case 'lessThan':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).lessThan(com.couchbase.lite.Expression.value(item.value));
+                ).lessThan(this.serializeExpression(item.value));
                 break;
             case 'lessThanOrEqualTo':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).lessThanOrEqualTo(com.couchbase.lite.Expression.value(item.value));
+                ).lessThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'like':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).like(com.couchbase.lite.Expression.value(item.value));
+                ).like(this.serializeExpression(item.value));
                 break;
             case 'modulo':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).modulo(com.couchbase.lite.Expression.value(item.value));
+                ).modulo(this.serializeExpression(item.value));
                 break;
             case 'multiply':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).multiply(com.couchbase.lite.Expression.value(item.value));
+                ).multiply(this.serializeExpression(item.value));
                 break;
 
             case 'notEqualTo':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).notEqualTo(com.couchbase.lite.Expression.value(item.value));
+                ).notEqualTo(this.serializeExpression(item.value));
                 break;
 
             case 'notNullOrMissing':
@@ -503,7 +538,7 @@ export class Couchbase extends Common {
             case 'regex':
                 nativeQuery = com.couchbase.lite.Expression.property(
                     item.property
-                ).regex(com.couchbase.lite.Expression.value(item.value));
+                ).regex(this.serializeExpression(item.value));
                 break;
         }
         return nativeQuery;
@@ -573,17 +608,14 @@ export class Couchbase extends Common {
         if (query.order) {
             const orderBy = [];
             for (let item of query.order) {
-                switch (item.direction) {
-                    case 'desc':
-                        orderBy.push(
-                            com.couchbase.lite.Ordering.property(item.property).descending()
-                        );
-                        break;
-                    default:
-                        orderBy.push(
-                            com.couchbase.lite.Ordering.property(item.property).ascending()
-                        );
-                        break;
+                if (item.direction === 'desc') {
+                    orderBy.push(
+                        com.couchbase.lite.Ordering.property(item.property).descending()
+                    );
+                } else {
+                    orderBy.push(
+                        com.couchbase.lite.Ordering.property(item.property).ascending()
+                    );
                 }
             }
             if (orderBy.length > 0) {
