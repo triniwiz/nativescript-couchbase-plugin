@@ -177,7 +177,7 @@ export class Couchbase extends Common {
 
     private fromISO8601UTC(date: string) {
         const dateFormat = new java.text.SimpleDateFormat(
-            'yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX'
+            'yyyy-MM-dd\'T\'HH:mm:ss.SSS'
         );
         const tz = java.util.TimeZone.getTimeZone('UTC');
         dateFormat.setTimeZone(tz);
@@ -186,7 +186,7 @@ export class Couchbase extends Common {
 
     private toISO8601UTC(date: Date) {
         const dateFormat = new java.text.SimpleDateFormat(
-            'yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX'
+            'yyyy-MM-dd\'T\'HH:mm:ss.SSS'
         );
         const tz = java.util.TimeZone.getTimeZone('UTC');
         dateFormat.setTimeZone(tz);
