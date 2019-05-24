@@ -332,7 +332,7 @@ export class Couchbase extends Common {
         const keys = Object.keys(data);
         for (let key of keys) {
             const item = data[key];
-            newDoc.setValueForKey(item, key);
+            this.serialize(item, newDoc, key);
         }
         this.ios.saveDocumentError(newDoc);
     }
