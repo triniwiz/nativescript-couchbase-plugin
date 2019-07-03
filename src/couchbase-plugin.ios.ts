@@ -45,7 +45,7 @@ export class Couchbase extends Common {
     }
 
     createDocument(data: Object, documentId?: string) {
-        let doc;
+        let doc: CBLMutableDocument;
         if (documentId) {
             doc = CBLMutableDocument.alloc().initWithID(documentId);
         } else {
@@ -106,8 +106,9 @@ export class Couchbase extends Common {
         return dateFormatter.dateFromString(date);
     }
 
-    private serializeObject(item, object: any, key) {
+    private serializeObject(item: any, object: CBLMutableDictionary, key: string) {
         if (item === null) {
+            object.setValueForKey(null, key);
             return;
         }
 
@@ -157,8 +158,9 @@ export class Couchbase extends Common {
         }
     }
 
-    private serializeArray(item, array: any) {
+    private serializeArray(item: any, array: CBLMutableArray) {
         if (item === null) {
+            array.addValue(null);
             return;
         }
 
@@ -208,8 +210,9 @@ export class Couchbase extends Common {
         }
     }
 
-    private serialize(item, doc: any, key) {
+    private serialize(item: any, doc: CBLMutableDocument, key: string) {
         if (item === null) {
+            doc.setValueForKey(null, key);
             return;
         }
 
@@ -329,7 +332,7 @@ export class Couchbase extends Common {
         const keys = Object.keys(data);
         for (let key of keys) {
             const item = data[key];
-            newDoc.setValueForKey(item, key);
+            this.serialize(item, newDoc, key);
         }
         this.ios.saveDocumentError(newDoc);
     }

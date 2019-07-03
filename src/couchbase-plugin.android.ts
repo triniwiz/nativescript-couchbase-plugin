@@ -213,8 +213,9 @@ export class Couchbase extends Common {
         }
     }
 
-    private serializeObject(item, object, key) {
+    private serializeObject(item: any, object: com.couchbase.lite.MutableDictionary, key: string) {
         if (item === null) {
+            object.setValue(key, null);
             return;
         }
 
@@ -264,8 +265,9 @@ export class Couchbase extends Common {
         }
     }
 
-    private serializeArray(item, array: any) {
+    private serializeArray(item: any, array: com.couchbase.lite.MutableArray) {
         if (item === null) {
+            array.addValue(null);
             return;
         }
 
@@ -315,8 +317,9 @@ export class Couchbase extends Common {
         }
     }
 
-    private serialize(item, doc: any, key) {
+    private serialize(item: any, doc: com.couchbase.lite.MutableDocument, key: string) {
         if (item === null) {
+            doc.setValue(key, null);
             return;
         }
 
