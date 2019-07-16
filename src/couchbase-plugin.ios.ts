@@ -552,7 +552,9 @@ export class Couchbase extends Common {
         let orderBy = null;
         let limit = null;
         let having = null;
+        let isAll = false;
         if (!query.select || query.select.length === 0) {
+            isAll = true;
             select.push(CBLQuerySelectResult.all());
             select.push(CBLQuerySelectResult.expression(CBLQueryMeta.id()));
         } else {
@@ -560,6 +562,7 @@ export class Couchbase extends Common {
                 if (item === QueryMeta.ID) {
                     select.push(CBLQuerySelectResult.expression(CBLQueryMeta.id()));
                 } else if (item === QueryMeta.ALL) {
+                    isAll = true;
                     select.push(CBLQuerySelectResult.all());
                 } else {
                     select.push(CBLQueryExpression.property(item));
@@ -642,15 +645,15 @@ export class Couchbase extends Common {
             for (let keyId = 0; keyId < keysSize; keyId++) {
                 const key = keys.objectAtIndex(keyId);
                 const nativeItem = item.valueForKey(key);
-                if (typeof nativeItem === 'string') {
-                    obj[key] = nativeItem;
-                } else if (types.getClass(nativeItem) === 'CBLDictionary') {
+                if (isAll && types.getClass(nativeItem) === 'CBLDictionary') {
                     const cblKeys = nativeItem.keys;
                     const cblKeysSize = cblKeys.count;
                     for (let cblKeysId = 0; cblKeysId < cblKeysSize; cblKeysId++) {
                         const cblKey = cblKeys.objectAtIndex(cblKeysId);
                         obj[cblKey] = this.deserialize(nativeItem.valueForKey(cblKey));
                     }
+                } else {
+                    obj[key] = this.deserialize(nativeItem);
                 }
             }
             items.push(obj);
