@@ -550,7 +550,9 @@ export class Couchbase extends Common {
     query(query: Query = {select: [QueryMeta.ALL, QueryMeta.ID]}) {
         const items = [];
         let select = [];
+        let isAll = false;
         if (!query.select || query.select.length === 0) {
+            isAll = true;
             select.push(com.couchbase.lite.SelectResult.all());
             select.push(
                 com.couchbase.lite.SelectResult.expression(com.couchbase.lite.Meta.id)
@@ -564,6 +566,7 @@ export class Couchbase extends Common {
                         )
                     );
                 } else if (item === QueryMeta.ALL) {
+                    isAll = true;
                     select.push(com.couchbase.lite.SelectResult.all());
                 } else {
                     select.push(com.couchbase.lite.SelectResult.property(item));
@@ -649,10 +652,10 @@ export class Couchbase extends Common {
             for (let keyId = 0; keyId < keysSize; keyId++) {
                 const key = keys.get(keyId);
                 const nativeItem = item.getValue(key);
-                if (typeof nativeItem === 'string') {
-                    obj[key] = nativeItem;
-                } else if (
+                if (
+                    isAll &&
                     nativeItem &&
+                    nativeItem.getClass &&
                     nativeItem.getClass() &&
                     nativeItem.getClass().getName() === 'com.couchbase.lite.Dictionary'
                 ) {
@@ -662,6 +665,8 @@ export class Couchbase extends Common {
                         const cblKey = cblKeys.get(cblKeysId);
                         obj[cblKey] = this.deserialize(nativeItem.getValue(cblKey));
                     }
+                } else {
+                    obj[key] = this.deserialize(nativeItem);
                 }
             }
             items.push(obj);
