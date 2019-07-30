@@ -9,7 +9,6 @@ import {
 } from './couchbase-plugin.common';
 import * as types from 'tns-core-modules/utils/types';
 import * as fs from 'tns-core-modules/file-system';
-import * as utils from 'tns-core-modules/utils/utils';
 
 export {
     Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
@@ -76,7 +75,7 @@ export class Couchbase extends Common {
                     const nativeBlob = CBLBlob.alloc().initWithContentTypeFileURLError(mimeType, NSURL.URLWithString(path));
                     document.setBlobForKey(nativeBlob, name);
                 } else if (blob.startsWith(`res`)) {
-                    const bundle = utils.ios.getter(NSBundle, NSBundle.mainBundle);
+                    const bundle = NSBundle.mainBundle;
                     const path = bundle.pathForResourceOfType(blob.replace('res://', ''), this.getExtension(mimeType));
                     const nativeBlob = CBLBlob.alloc().initWithContentTypeFileURLError(mimeType, NSURL.URLWithString(path));
                     document.setBlobForKey(nativeBlob, name);
