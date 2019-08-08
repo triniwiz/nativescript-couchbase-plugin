@@ -715,7 +715,7 @@ export class Couchbase extends Common {
     }
 
     addDatabaseChangeListener(callback: any) {
-        const listener = co.fitcom.fancycouchbase.TNSDatabaseChangeListener.extend({
+        const listener = (co as any).fitcom.fancycouchbase.TNSDatabaseChangeListener.extend({
             onChange(changes: any): void {
                 if (callback && typeof callback === 'function') {
                     const ids = [];
