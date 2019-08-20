@@ -50,6 +50,8 @@ export declare class Replicator extends ReplicatorBase {
     setContinuous(isContinuous: boolean): void;
 
     setUserNameAndPassword(username: string, password: string): any;
+    
+    setChannels(channels: [string]): any;
 
     setSessionIdAndCookieName(sessionId: string, cookieName: string): any;
 
