@@ -712,7 +712,7 @@ export class Replicator extends ReplicatorBase {
     
     setChannels(channels: [string]) {
         const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
-        newConfig.channels = channels;
+        newConfig.channels = NSArray.arrayWithArray(channels);
         this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
     }
 
