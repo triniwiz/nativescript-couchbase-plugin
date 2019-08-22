@@ -49,6 +49,8 @@ export abstract class ReplicatorBase {
     abstract setContinuous(isContinuous: boolean);
 
     abstract setUserNameAndPassword(username: string, password: string);
+    
+    abstract setChannels(channels: string[]);
 
     abstract setSessionIdAndCookieName(sessionId: string, cookieName: string);
 

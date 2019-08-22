@@ -782,6 +782,12 @@ export class Replicator extends ReplicatorBase {
         );
         this.replicator = new com.couchbase.lite.Replicator(newConfig);
     }
+    
+    setChannel(channels: string[]) {
+        const newConfig = new com.couchbase.lite.ReplicatorConfiguration(this.replicator.getConfig());
+        newConfig.setChannels(channels);
+        this.replicator = new com.couchbase.lite.Replicator(newConfig);
+    };
 }
 
 export class Blob extends BlobBase {
