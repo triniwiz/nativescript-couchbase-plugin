@@ -51,7 +51,7 @@ export declare class Replicator extends ReplicatorBase {
 
     setUserNameAndPassword(username: string, password: string): any;
     
-    setChannels(channels: [string]): any;
+    setChannels(channels: string[]): any;
 
     setSessionIdAndCookieName(sessionId: string, cookieName: string): any;
 
