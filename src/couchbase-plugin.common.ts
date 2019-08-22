@@ -50,7 +50,7 @@ export abstract class ReplicatorBase {
 
     abstract setUserNameAndPassword(username: string, password: string);
     
-    abstract setChannels(channels: [string]);
+    abstract setChannels(channels: string[]);
 
     abstract setSessionIdAndCookieName(sessionId: string, cookieName: string);
 
