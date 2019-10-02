@@ -96,7 +96,7 @@ export enum QueryArrayOperator {
 export interface Query {
     select: any[];
     // join?: any[];
-    where?: any[];
+    where?: QueryWhereItem[];
     groupBy?: any;
     // having?: any;
     order?: QueryOrderItem[];
