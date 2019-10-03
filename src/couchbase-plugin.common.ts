@@ -141,3 +141,8 @@ export abstract class BlobBase {
         this.blob = blob;
     }
 }
+
+export enum ConcurrencyMode {
+    'LastWriteWins' = 0,
+    'FailOnConflict' = 1
+}

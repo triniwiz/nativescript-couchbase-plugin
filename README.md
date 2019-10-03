@@ -13,7 +13,7 @@
 
 
 ```ts
-import { Couchbase } from 'nativescript-couchbase-plugin';
+import { Couchbase, ConcurrencyMode } from 'nativescript-couchbase-plugin';
 const database = new Couchbase('my-database');
 
 const documentId = database.createDocument({
@@ -34,7 +34,8 @@ database.updateDocument(documentId, {
     "twitter": "https://www.twitter.com/triniwiz"
 });
 
-const isDeleted = database.deleteDocument(documentId);
+// Default concurrency mode is FailOnConflict if you don't pass it
+const isDeleted = database.deleteDocument(documentId, ConcurrencyMode.FailOnConflict);
 ```
 
 ### Synchronization with Couchbase Sync Gateway and Couchbase Server
