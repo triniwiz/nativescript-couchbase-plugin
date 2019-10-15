@@ -33,7 +33,9 @@ export declare class Couchbase extends Common {
 
     createPushReplication(remoteUrl: string, username?: string, password?: string): Replicator;
 
-    addDatabaseChangeListener(callback: any): void;
+    addDatabaseChangeListener(callback: any): CBLListenerToken;
+
+    removeDatabaseChangeListener(token: any): Promise<any>;
 
     inBatch(batch: () => void): void;
 }

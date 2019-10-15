@@ -729,8 +729,21 @@ export class Couchbase extends Common {
                 }
             }
         });
-        this.android.addChangeListener(new listener());
+        const CBLListenerToken = this.android.addChangeListener(new listener());
+        return CBLListenerToken;
     }
+
+    removeDatabaseChangeListener(token: any) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.android.removeChangeListener(token);
+                resolve('Change listener removed');
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
 }
 
 export class Replicator extends ReplicatorBase {
