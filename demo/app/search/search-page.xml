@@ -1,12 +1,12 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="page">
-  <StackLayout class="p-20" rows="auto,auto,*" columns="auto,auto">
-    <SearchBar id="search" row="1" hint="Search here..." col="0" submit="{{search}}"/>
-    <ListView row="2" colSpan="2" items="{{items}}">
+  <GridLayout class="p-20" rows="auto,*">
+    <SearchBar id="search" row="0" hint="Search here..." col="0" submit="{{search}}"/>
+    <ListView row="1" items="{{items}}">
       <ListView.itemTemplate>
         <GridLayout>
           <Label text="{{title}}"/>
         </GridLayout>
       </ListView.itemTemplate>
     </ListView>
-  </StackLayout>
+  </GridLayout>
 </Page>

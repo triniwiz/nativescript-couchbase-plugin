@@ -1,7 +1,7 @@
 import { Common, Query, ReplicatorBase } from './couchbase-plugin.common';
 
 export {
-    Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
+    ConcurrencyMode, Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
 }from './couchbase-plugin.common';
 
 export declare class Couchbase extends Common {

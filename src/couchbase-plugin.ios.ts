@@ -5,7 +5,8 @@ import {
     QueryComparisonOperator,
     QueryLogicalOperator,
     QueryMeta,
-    ReplicatorBase
+    ReplicatorBase,
+    ConcurrencyMode
 } from './couchbase-plugin.common';
 import * as types from 'tns-core-modules/utils/types';
 import * as fs from 'tns-core-modules/file-system';
@@ -336,9 +337,12 @@ export class Couchbase extends Common {
         this.ios.saveDocumentError(newDoc);
     }
 
-    deleteDocument(documentId: string) {
+    deleteDocument(documentId: string, concurrencyMode: ConcurrencyMode = 1) {
+        
         const doc = this.ios.documentWithID(documentId);
-        return this.ios.deleteDocumentError(doc);
+        return this.ios.deleteDocumentConcurrencyControlError(doc,
+                concurrencyMode === 1 ? CBLConcurrencyControl.kCBLConcurrencyControlFailOnConflict : 
+                CBLConcurrencyControl.kCBLConcurrencyControlLastWriteWins);
     }
 
     destroyDatabase() {

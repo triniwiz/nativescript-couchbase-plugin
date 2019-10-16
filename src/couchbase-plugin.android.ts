@@ -1,6 +1,7 @@
 import {
     BlobBase,
     Common,
+    ConcurrencyMode,
     Query,
     QueryComparisonOperator,
     QueryLogicalOperator,
@@ -377,10 +378,11 @@ export class Couchbase extends Common {
         return item < -Math.pow(2, 31) + 1 || item > Math.pow(2, 31) - 1;
     }
 
-    deleteDocument(documentId: string) {
+    deleteDocument(documentId: string, concurrencyMode: ConcurrencyMode = 1) {
         try {
             const doc = this.android.getDocument(documentId);
-            return this.android.delete(doc);
+            return this.android.delete(doc, concurrencyMode === 1 ? com.couchbase.lite.ConcurrencyControl.FAIL_ON_CONFLICT :
+                com.couchbase.lite.ConcurrencyControl.LAST_WRITE_WINS);
         } catch (e) {
             console.error(e.message);
             return false;
