@@ -382,7 +382,7 @@ export class Couchbase extends Common {
     }
 
     addDatabaseChangeListener(callback: any) {
-        this.ios.addChangeListener((change: any) => {
+        const CBLListenerToken = this.ios.addChangeListener((change: any) => {
             if (callback && typeof callback === 'function') {
                 const ids = [];
                 const documentIds = change.documentIDs;
@@ -392,6 +392,18 @@ export class Couchbase extends Common {
                     ids.push(item);
                 }
                 callback(ids);
+            }
+        });
+        return CBLListenerToken;
+    }
+
+    removeDatabaseChangeListener(token: any) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.ios.removeChangeListenerWithToken(token);
+                resolve('Change listener removed');
+            } catch (error) {
+                reject(error);
             }
         });
     }
