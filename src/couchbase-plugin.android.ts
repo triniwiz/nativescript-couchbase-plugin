@@ -715,6 +715,8 @@ export class Couchbase extends Common {
         return this.createReplication(remoteUrl, 'push');
     }
 
+    private _listenerMap = {};
+
     addDatabaseChangeListener(callback: any) {
         const listener = (co as any).fitcom.fancycouchbase.TNSDatabaseChangeListener.extend({
             onChange(changes: any): void {
@@ -730,19 +732,18 @@ export class Couchbase extends Common {
                 }
             }
         });
-        const CBLListenerToken = this.android.addChangeListener(new listener());
-        return CBLListenerToken;
+        const token = this.android.addChangeListener(new listener());
+        if (!types.isNullOrUndefined(token)) {
+            this._listenerMap[callback] = token;
+        }
     }
 
-    removeDatabaseChangeListener(token: any) {
-        return new Promise((resolve, reject) => {
-            try {
-                this.android.removeChangeListener(token);
-                resolve('Change listener removed');
-            } catch (error) {
-                reject(error);
-            }
-        });
+    removeDatabaseChangeListener(callback: any) {
+        const token = this._listenerMap[callback];
+        if (!types.isNullOrUndefined(token)) {
+            this.android.removeChangeListener(token);
+            delete this._listenerMap[callback];
+        }
     }
 
 }
@@ -799,7 +800,7 @@ export class Replicator extends ReplicatorBase {
 
     setChannels(channels: string[]) {
         const newConfig = new com.couchbase.lite.ReplicatorConfiguration(this.replicator.getConfig());
-        newConfig.setChannels(channels);
+        newConfig.setChannels(java.util.Arrays.asList(channels));
         this.replicator = new com.couchbase.lite.Replicator(newConfig);
     };
 }

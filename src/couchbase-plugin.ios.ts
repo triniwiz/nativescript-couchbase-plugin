@@ -381,8 +381,10 @@ export class Couchbase extends Common {
         return this.createReplication(remoteUrl, 'pull');
     }
 
+    private _listenerMap = {};
+
     addDatabaseChangeListener(callback: any) {
-        const CBLListenerToken = this.ios.addChangeListener((change: any) => {
+        const token = this.ios.addChangeListener((change: any) => {
             if (callback && typeof callback === 'function') {
                 const ids = [];
                 const documentIds = change.documentIDs;
@@ -394,18 +396,17 @@ export class Couchbase extends Common {
                 callback(ids);
             }
         });
-        return CBLListenerToken;
+        if (!types.isNullOrUndefined(token)) {
+            this._listenerMap[callback] = token;
+        }
     }
 
-    removeDatabaseChangeListener(token: any) {
-        return new Promise((resolve, reject) => {
-            try {
-                this.ios.removeChangeListenerWithToken(token);
-                resolve('Change listener removed');
-            } catch (error) {
-                reject(error);
-            }
-        });
+    removeDatabaseChangeListener(callback: any) {
+        const token = this._listenerMap[callback];
+        if (!types.isNullOrUndefined(token)) {
+            this.ios.removeChangeListenerWithToken(token);
+            delete this._listenerMap[callback];
+        }
     }
 
     private serializeExpression(item) {
