@@ -1,19 +1,19 @@
 import {
     BlobBase,
     Common,
+    ConcurrencyMode,
     Query,
     QueryComparisonOperator,
     QueryLogicalOperator,
     QueryMeta,
-    ReplicatorBase,
-    ConcurrencyMode
+    ReplicatorBase
 } from './couchbase-plugin.common';
 import * as types from 'tns-core-modules/utils/types';
 import * as fs from 'tns-core-modules/file-system';
 
 export {
     Query, QueryMeta, QueryArrayOperator, QueryComparisonOperator, QueryLogicalOperator, QueryOrderItem, QueryWhereItem
-}from './couchbase-plugin.common';
+} from './couchbase-plugin.common';
 
 
 declare var CBLDatabase,
@@ -338,10 +338,10 @@ export class Couchbase extends Common {
     }
 
     deleteDocument(documentId: string, concurrencyMode: ConcurrencyMode = 1) {
-        
+
         const doc = this.ios.documentWithID(documentId);
         return this.ios.deleteDocumentConcurrencyControlError(doc,
-                concurrencyMode === 1 ? CBLConcurrencyControl.kCBLConcurrencyControlFailOnConflict : 
+            concurrencyMode === 1 ? CBLConcurrencyControl.kCBLConcurrencyControlFailOnConflict :
                 CBLConcurrencyControl.kCBLConcurrencyControlLastWriteWins);
     }
 
@@ -522,7 +522,7 @@ export class Couchbase extends Common {
                 ).lessThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'like':
-                nativeQuery = CBLQueryExpression.property(item.property).like(
+                nativeQuery = CBLQueryFunction.lower(item.property).like(
                     this.serializeExpression(item.value)
                 );
                 break;
@@ -549,7 +549,7 @@ export class Couchbase extends Common {
                 ).notNullOrMissing();
                 break;
             case 'regex':
-                nativeQuery = CBLQueryExpression.property(item.property).regex(
+                nativeQuery = CBLQueryFunction.lower(item.property).regex(
                     this.serializeExpression(item.value)
                 );
                 break;
@@ -725,7 +725,7 @@ export class Replicator extends ReplicatorBase {
         );
         this.replicator = CBLReplicator.alloc().initWithConfig(newConfig);
     }
-    
+
     setChannels(channels: string[]) {
         const newConfig = CBLReplicatorConfiguration.alloc().initWithConfig(this.replicator.config);
         newConfig.channels = NSArray.arrayWithArray(channels);

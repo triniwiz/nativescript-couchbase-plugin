@@ -514,7 +514,7 @@ export class Couchbase extends Common {
                 ).lessThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'like':
-                nativeQuery = com.couchbase.lite.Expression.property(
+                nativeQuery = com.couchbase.lite.Function.lower(
                     item.property
                 ).like(this.serializeExpression(item.value));
                 break;
@@ -541,9 +541,8 @@ export class Couchbase extends Common {
                 ).notNullOrMissing();
                 break;
             case 'regex':
-                nativeQuery = com.couchbase.lite.Expression.property(
-                    item.property
-                ).regex(this.serializeExpression(item.value));
+                nativeQuery = com.couchbase.lite.Function.lower(item.property)
+                    .regex(this.serializeExpression(item.value));
                 break;
         }
         return nativeQuery;
@@ -745,7 +744,7 @@ export class Couchbase extends Common {
             }
         });
     }
-    
+
 }
 
 export class Replicator extends ReplicatorBase {
@@ -797,7 +796,7 @@ export class Replicator extends ReplicatorBase {
         );
         this.replicator = new com.couchbase.lite.Replicator(newConfig);
     }
-    
+
     setChannels(channels: string[]) {
         const newConfig = new com.couchbase.lite.ReplicatorConfiguration(this.replicator.getConfig());
         newConfig.setChannels(channels);
