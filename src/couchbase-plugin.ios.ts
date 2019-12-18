@@ -523,7 +523,7 @@ export class Couchbase extends Common {
                 ).lessThanOrEqualTo(this.serializeExpression(item.value));
                 break;
             case 'like':
-                nativeQuery = CBLQueryFunction.lower(item.property).like(
+                nativeQuery = CBLQueryFunction.lower(CBLQueryExpression.property(item.property)).like(
                     this.serializeExpression(item.value)
                 );
                 break;
