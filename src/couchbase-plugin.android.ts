@@ -515,7 +515,7 @@ export class Couchbase extends Common {
                 break;
             case 'like':
                 nativeQuery = com.couchbase.lite.Function.lower(
-                    item.property
+                    com.couchbase.lite.Expression.property(item.property)
                 ).like(this.serializeExpression(item.value));
                 break;
             case 'modulo':
