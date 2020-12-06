@@ -4,7 +4,7 @@
 
 # NativeScript-Couchbase
 
-The source is now managed at https://github.com/triniwiz/nativescript-plugins
+**The source is now managed at** https://github.com/triniwiz/nativescript-plugins
 
 ## Installation
 
