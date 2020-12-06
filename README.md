@@ -4,6 +4,8 @@
 
 # NativeScript-Couchbase
 
+The source is now managed at https://github.com/triniwiz/nativescript-plugins
+
 ## Installation
 
 `tns plugin add nativescript-couchbase-plugin`
